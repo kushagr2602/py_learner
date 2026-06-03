@@ -1,834 +1,859 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pyDS Track — Python for Data Science</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0d0d0f;
-    --surface: #141417;
-    --surface2: #1c1c21;
-    --border: #2a2a32;
-    --accent: #7c6ef5;
-    --accent2: #f5a623;
-    --accent3: #4ecdc4;
-    --text: #e8e8f0;
-    --text2: #8888a0;
-    --easy: #4ecdc4;
-    --med: #f5a623;
-    --hard: #f55a5a;
-    --radius: 10px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* HEADER */
-  .header {
-    padding: 20px 24px 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .logo {
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-
-  .logo span { color: var(--accent); }
-
-  .progress-bar-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--text2);
-  }
-
-  .progress-bar {
-    width: 140px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent3));
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-
-  .topic-tabs {
-    display: flex;
-    gap: 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 0;
-  }
-
-  .topic-tabs::-webkit-scrollbar { display: none; }
-
-  .topic-tab {
-    flex-shrink: 0;
-    padding: 10px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: 'Syne', sans-serif;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .topic-tab:hover { color: var(--text); }
-  .topic-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  .tab-check {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8px;
-  }
-
-  .tab-check.done { background: var(--accent3); color: #000; }
-
-  /* MAIN */
-  .main {
-    display: flex;
-    flex: 1;
-    height: calc(100vh - 89px);
-  }
-
-  /* SIDEBAR */
-  .sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-    padding: 16px 12px;
-    background: var(--surface);
-  }
-
-  .sidebar::-webkit-scrollbar { width: 4px; }
-  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .section-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text2);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 8px 8px 4px;
-  }
-
-  .ex-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text2);
-    transition: all 0.15s;
-    border: 1px solid transparent;
-  }
-
-  .ex-item:hover { background: var(--surface2); color: var(--text); }
-  .ex-item.active { background: var(--surface2); color: var(--text); border-color: var(--border); }
-  .ex-item.solved { color: var(--accent3); }
-
-  .diff-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .diff-dot.easy { background: var(--easy); }
-  .diff-dot.medium { background: var(--med); }
-  .diff-dot.hard { background: var(--hard); }
-
-  .ex-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text2);
-    width: 20px;
-    flex-shrink: 0;
-  }
-
-  .check-icon { margin-left: auto; font-size: 12px; }
-
-  /* CONTENT */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px;
-  }
-
-  .content::-webkit-scrollbar { width: 4px; }
-  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .cheatsheet { display: none; max-width: 720px; }
-  .cheatsheet.visible { display: block; }
-
-  .cs-title {
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 4px;
-    letter-spacing: -0.5px;
-  }
-
-  .cs-sub {
-    font-size: 14px;
-    color: var(--text2);
-    margin-bottom: 20px;
-    line-height: 1.6;
-  }
-
-  .cs-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    margin-bottom: 12px;
-  }
-
-  .cs-block-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .cs-code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: #c9d1d9;
-    white-space: pre;
-    line-height: 1.8;
-    overflow-x: auto;
-  }
-
-  .cs-code .kw { color: #ff79c6; }
-  .cs-code .fn { color: #50fa7b; }
-  .cs-code .cm { color: #6272a4; }
-  .cs-code .st { color: #f1fa8c; }
-  .cs-code .nm { color: #bd93f9; }
-
-  .start-btn {
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-
-  .start-btn:hover { opacity: 0.85; }
-
-  .exercise-panel { display: none; max-width: 720px; }
-  .exercise-panel.visible { display: block; }
-
-  .ex-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .ex-number {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text2);
-    background: var(--surface2);
-    padding: 4px 8px;
-    border-radius: 6px;
-    flex-shrink: 0;
-    margin-top: 4px;
-  }
-
-  .ex-info { flex: 1; }
-
-  .ex-title-main {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.3px;
-    margin-bottom: 6px;
-  }
-
-  .diff-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 20px;
-    margin-bottom: 10px;
-  }
-
-  .diff-badge.easy { background: rgba(78,205,196,0.15); color: var(--easy); }
-  .diff-badge.medium { background: rgba(245,166,35,0.15); color: var(--med); }
-  .diff-badge.hard { background: rgba(245,90,90,0.15); color: var(--hard); }
-
-  .ex-description {
-    font-size: 14px;
-    color: var(--text2);
-    line-height: 1.7;
-    margin-bottom: 16px;
-  }
-
-  .ex-description code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    background: var(--surface2);
-    padding: 1px 5px;
-    border-radius: 4px;
-    color: var(--accent3);
-  }
-
-  .code-area {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text);
-    resize: vertical;
-    min-height: 120px;
-    outline: none;
-    transition: border-color 0.2s;
-    line-height: 1.7;
-  }
-
-  .code-area:focus { border-color: var(--accent); }
-
-  .action-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    align-items: center;
-  }
-
-  .btn {
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-
-  .btn-run { background: var(--accent); color: #fff; }
-  .btn-run:hover { opacity: 0.85; }
-  .btn-hint { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .btn-hint:hover { color: var(--text); }
-
-  .hint-box {
-    margin-top: 10px;
-    background: rgba(124,110,245,0.08);
-    border: 1px solid rgba(124,110,245,0.3);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text2);
-    line-height: 1.7;
-    white-space: pre-wrap;
-    display: none;
-  }
-
-  .output-box {
-    margin-top: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    min-height: 40px;
-    white-space: pre-wrap;
-    color: var(--text2);
-    line-height: 1.7;
-  }
-
-  .output-box.success { border-color: var(--easy); color: var(--easy); }
-  .output-box.error { border-color: var(--hard); color: var(--hard); }
-
-  .nav-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
-
-  .btn-nav { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-  .btn-nav:hover { color: var(--text); }
-
-  .congrats { display: none; text-align: center; padding: 60px 20px; }
-  .congrats.visible { display: block; }
-  .congrats-icon { font-size: 56px; margin-bottom: 16px; }
-  .congrats-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-  .congrats-sub { font-size: 14px; color: var(--text2); }
-</style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.1">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-top">
-    <div class="logo">py<span>DS</span> track</div>
-    <div class="progress-bar-wrap">
-      <span id="progress-text">0 / 0 solved</span>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-    </div>
-  </div>
-  <div class="topic-tabs" id="topic-tabs"></div>
-</div>
-
-<div class="main">
-  <div class="sidebar" id="sidebar"></div>
-  <div class="content" id="content">
-    <div class="cheatsheet visible" id="cheatsheet"></div>
-    <div class="exercise-panel" id="exercise-panel"></div>
-    <div class="congrats" id="congrats">
-      <div class="congrats-icon">🎉</div>
-      <div class="congrats-title">Topic Complete!</div>
-      <div class="congrats-sub">Move to the next topic from the tabs above.</div>
-    </div>
-  </div>
-</div>
-
-<script>
-const curriculum = [
-  {
-    id: "loops", label: "Loops", icon: "🔁",
-    intro: "Loops let you repeat code. Python has two: <b>for</b> (iterate over a sequence) and <b>while</b> (repeat while a condition is true).",
-    cheatsheet: [
-      { title: "for loop + range()", code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">5</span>):        <span class="cm"># 0,1,2,3,4</span>\n    <span class="fn">print</span>(i)\n\n<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">1</span>, <span class="nm">6</span>):     <span class="cm"># 1,2,3,4,5</span>\n    <span class="fn">print</span>(i)\n\n<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, <span class="nm">10</span>, <span class="nm">2</span>):  <span class="cm"># 0,2,4,6,8</span>\n    <span class="fn">print</span>(i)` },
-      { title: "for loop over list / string", code: `<span class="kw">for</span> fruit <span class="kw">in</span> [<span class="st">"apple"</span>, <span class="st">"banana"</span>]:\n    <span class="fn">print</span>(fruit)\n\n<span class="kw">for</span> ch <span class="kw">in</span> <span class="st">"hello"</span>:\n    <span class="fn">print</span>(ch)` },
-      { title: "while loop", code: `count = <span class="nm">0</span>\n<span class="kw">while</span> count &lt; <span class="nm">5</span>:\n    <span class="fn">print</span>(count)\n    count += <span class="nm">1</span>` },
-      { title: "break & continue", code: `<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">10</span>):\n    <span class="kw">if</span> i == <span class="nm">5</span>: <span class="kw">break</span>    <span class="cm"># stop loop</span>\n    <span class="kw">if</span> i % <span class="nm">2</span> == <span class="nm">0</span>: <span class="kw">continue</span>  <span class="cm"># skip even</span>\n    <span class="fn">print</span>(i)  <span class="cm"># prints 1 3</span>` },
-    ],
-    exercises: [
-      { title: "Count to 10", diff: "easy", desc: "Print numbers 1 through 10 using a <code>for</code> loop.", hint: "for i in range(1, 11):\n    print(i)", check: o => o.trim() === [1,2,3,4,5,6,7,8,9,10].join('\n') },
-      { title: "Sum of a list", diff: "easy", desc: "Find the sum of <code>nums = [4, 7, 2, 9, 1]</code> using a loop. Print the total.", hint: "total = 0\nfor n in nums:\n    total += n\nprint(total)", check: o => o.includes('23') },
-      { title: "While countdown", diff: "easy", desc: "Use a <code>while</code> loop to count down from 5 to 1, then print <code>Blast off!</code>.", hint: "n = 5\nwhile n >= 1:\n    print(n)\n    n -= 1\nprint('Blast off!')", check: o => o.includes('5') && o.includes('1') && o.toLowerCase().includes('blast off') },
-      { title: "Reverse range", diff: "easy", desc: "Print numbers 10 down to 1 using <code>range()</code> with a step.", hint: "range(10, 0, -1)", check: o => o.trim().startsWith('10') && o.trim().endsWith('1') },
-      { title: "Skip the evens", diff: "easy", desc: "Loop 1–20, print only odd numbers using <code>continue</code>.", hint: "if i % 2 == 0:\n    continue", check: o => { const ns = o.trim().split('\n').map(Number); return ns.length === 10 && ns.every(n => n % 2 !== 0); } },
-      { title: "First multiple of 7", diff: "medium", desc: "Loop 1–100. Print the first number divisible by 7, then stop using <code>break</code>.", hint: "if i % 7 == 0:\n    print(i)\n    break", check: o => o.trim() === '7' },
-      { title: "FizzBuzz", diff: "medium", desc: "Loop 1–20. Print <code>Fizz</code> for multiples of 3, <code>Buzz</code> for multiples of 5, <code>FizzBuzz</code> for both, else the number.", hint: "Check % 15 first, then % 3, then % 5", check: o => o.includes('FizzBuzz') && o.includes('Fizz') && o.includes('Buzz') && o.includes('1') },
-      { title: "Multiplication table", diff: "medium", desc: "Use nested loops to print a 5×5 multiplication table.", hint: "for i in range(1, 6):\n    for j in range(1, 6):\n        print(i*j, end=' ')\n    print()", check: o => o.includes('25') && o.includes('1') && o.includes('4') },
-      { title: "Count vowels", diff: "medium", desc: "Loop through the string <code>'hello world'</code> and count how many vowels it has. Print the count.", hint: "vowels = 'aeiou'\ncount = 0\nfor ch in text:\n    if ch in vowels:\n        count += 1", check: o => o.trim().includes('3') },
-      { title: "Sum of squares", diff: "medium", desc: "Print the sum of squares of numbers 1–10 (1²+2²+...+10²).", hint: "total += i**2", check: o => o.trim().includes('385') },
-      { title: "Number guessing loop", diff: "hard", desc: "Set <code>secret = 7</code>. Loop through 1–20 and print <code>Too low</code>, <code>Found it!</code>, or <code>Too high</code> for each number. Stop when found.", hint: "if i < secret: print('Too low')\nelif i == secret: print('Found it!'); break\nelse: print('Too high'); break", check: o => o.includes('Found it') },
-      { title: "Fibonacci sequence", diff: "hard", desc: "Print the first 10 Fibonacci numbers (0, 1, 1, 2, 3, 5, 8, 13, 21, 34) using a loop.", hint: "a, b = 0, 1\nfor _ in range(10):\n    print(a)\n    a, b = b, a+b", check: o => o.includes('0') && o.includes('34') && o.trim().split('\n').length === 10 },
-      { title: "Prime checker", diff: "hard", desc: "Print all prime numbers between 2 and 30 using nested loops.", hint: "for n in range(2, 31):\n    is_prime = True\n    for i in range(2, n):\n        if n % i == 0:\n            is_prime = False; break\n    if is_prime: print(n)", check: o => o.includes('2') && o.includes('29') && o.includes('17') },
-    ]
-  },
-  {
-    id: "functions", label: "Functions", icon: "⚙️",
-    intro: "Functions let you wrap reusable logic. Use <b>def</b> to define, <b>return</b> to send back a value.",
-    cheatsheet: [
-      { title: "Basic function", code: `<span class="kw">def</span> <span class="fn">greet</span>(name):\n    <span class="kw">return</span> <span class="st">"Hello, "</span> + name\n\n<span class="fn">print</span>(<span class="fn">greet</span>(<span class="st">"Kushagr"</span>))  <span class="cm"># Hello, Kushagr</span>` },
-      { title: "Default arguments", code: `<span class="kw">def</span> <span class="fn">power</span>(base, exp=<span class="nm">2</span>):\n    <span class="kw">return</span> base ** exp\n\n<span class="fn">power</span>(<span class="nm">3</span>)    <span class="cm"># 9</span>\n<span class="fn">power</span>(<span class="nm">3</span>, <span class="nm">3</span>)  <span class="cm"># 27</span>` },
-      { title: "Multiple return values", code: `<span class="kw">def</span> <span class="fn">min_max</span>(lst):\n    <span class="kw">return</span> <span class="fn">min</span>(lst), <span class="fn">max</span>(lst)\n\nlo, hi = <span class="fn">min_max</span>([<span class="nm">3</span>, <span class="nm">1</span>, <span class="nm">9</span>, <span class="nm">4</span>])\n<span class="fn">print</span>(lo, hi)  <span class="cm"># 1 9</span>` },
-      { title: "*args and lambda", code: `<span class="kw">def</span> <span class="fn">total</span>(*nums):\n    <span class="kw">return</span> <span class="fn">sum</span>(nums)\n\n<span class="fn">total</span>(<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>)  <span class="cm"># 6</span>\n\ndouble = <span class="kw">lambda</span> x: x * <span class="nm">2</span>\n<span class="fn">double</span>(<span class="nm">5</span>)  <span class="cm"># 10</span>` },
-    ],
-    exercises: [
-      { title: "Hello function", diff: "easy", desc: "Write a function <code>greet(name)</code> that returns <code>Hello, [name]!</code>. Call it with your name and print the result.", hint: "def greet(name):\n    return 'Hello, ' + name + '!'", check: o => o.toLowerCase().includes('hello') },
-      { title: "Square a number", diff: "easy", desc: "Write a function <code>square(n)</code> that returns n². Print <code>square(7)</code>.", hint: "return n ** 2", check: o => o.trim().includes('49') },
-      { title: "Is even?", diff: "easy", desc: "Write <code>is_even(n)</code> that returns <code>True</code> if n is even, else <code>False</code>. Test with 4 and 7.", hint: "return n % 2 == 0", check: o => o.includes('True') && o.includes('False') },
-      { title: "Min of two", diff: "easy", desc: "Write <code>my_min(a, b)</code> that returns the smaller of two numbers without using <code>min()</code>.", hint: "if a < b:\n    return a\nreturn b", check: o => { const lines = o.trim().split('\n'); return lines.some(l => l.trim().length > 0); } },
-      { title: "Celsius to Fahrenheit", diff: "easy", desc: "Write <code>to_fahrenheit(c)</code> that converts Celsius to Fahrenheit. Formula: <code>F = C * 9/5 + 32</code>. Print result for 0°C and 100°C.", hint: "return c * 9/5 + 32", check: o => o.includes('32') && o.includes('212') },
-      { title: "Default argument", diff: "medium", desc: "Write <code>power(base, exp=2)</code> that returns base^exp. Call it as <code>power(3)</code> and <code>power(2, 10)</code>.", hint: "def power(base, exp=2):\n    return base ** exp", check: o => o.includes('9') && o.includes('1024') },
-      { title: "Sum with *args", diff: "medium", desc: "Write <code>total(*nums)</code> that returns the sum of any number of arguments. Test with <code>total(1,2,3)</code> and <code>total(10,20,30,40)</code>.", hint: "def total(*nums):\n    return sum(nums)", check: o => o.includes('6') && o.includes('100') },
-      { title: "Count occurrences", diff: "medium", desc: "Write <code>count_char(text, char)</code> that counts how many times <code>char</code> appears in <code>text</code>. Test: <code>count_char('banana', 'a')</code>.", hint: "count = 0\nfor c in text:\n    if c == char:\n        count += 1\nreturn count", check: o => o.trim().includes('3') },
-      { title: "Return min and max", diff: "medium", desc: "Write <code>stats(lst)</code> that returns both the minimum and maximum of a list as a tuple. Test with <code>[3, 1, 9, 4, 7]</code>.", hint: "return min(lst), max(lst)", check: o => o.includes('1') && o.includes('9') },
-      { title: "Palindrome check", diff: "medium", desc: "Write <code>is_palindrome(word)</code> that returns <code>True</code> if the word reads the same forwards and backwards. Test: <code>'racecar'</code> and <code>'hello'</code>.", hint: "return word == word[::-1]", check: o => o.includes('True') && o.includes('False') },
-      { title: "Factorial", diff: "hard", desc: "Write <code>factorial(n)</code> that returns n! using a loop. Print <code>factorial(5)</code> and <code>factorial(10)</code>.", hint: "result = 1\nfor i in range(1, n+1):\n    result *= i\nreturn result", check: o => o.includes('120') && o.includes('3628800') },
-      { title: "Lambda sort", diff: "hard", desc: "Given <code>words = ['banana','kiwi','apple','fig']</code>, sort them by length using a <code>lambda</code> and print.", hint: "sorted(words, key=lambda w: len(w))", check: o => { const idx_fig = o.indexOf('fig'); const idx_banana = o.indexOf('banana'); return idx_fig < idx_banana; } },
-      { title: "Recursive sum", diff: "hard", desc: "Write a recursive function <code>rsum(lst)</code> that sums a list without using <code>sum()</code>. Test: <code>rsum([1,2,3,4,5])</code>.", hint: "if not lst:\n    return 0\nreturn lst[0] + rsum(lst[1:])", check: o => o.trim().includes('15') },
-    ]
-  },
-  {
-    id: "datastructs", label: "Data Structures", icon: "📦",
-    intro: "Lists, dictionaries, sets and tuples are the core containers in Python. Master these and data manipulation becomes natural.",
-    cheatsheet: [
-      { title: "Lists", code: `lst = [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]\nlst.<span class="fn">append</span>(<span class="nm">4</span>)      <span class="cm"># [1,2,3,4]</span>\nlst.<span class="fn">remove</span>(<span class="nm">2</span>)      <span class="cm"># [1,3,4]</span>\nlst[<span class="nm">0</span>]             <span class="cm"># 1</span>\nlst[<span class="nm">1</span>:<span class="nm">3</span>]           <span class="cm"># [3,4]</span>\n<span class="fn">len</span>(lst)           <span class="cm"># 3</span>` },
-      { title: "Dictionaries", code: `d = {<span class="st">"name"</span>: <span class="st">"Kushagr"</span>, <span class="st">"age"</span>: <span class="nm">25</span>}\nd[<span class="st">"name"</span>]          <span class="cm"># "Kushagr"</span>\nd[<span class="st">"city"</span>] = <span class="st">"Hamburg"</span>\nd.<span class="fn">keys</span>()  d.<span class="fn">values</span>()  d.<span class="fn">items</span>()` },
-      { title: "Sets & Tuples", code: `s = {<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">2</span>}  <span class="cm"># {1,2,3} no dups</span>\ns.<span class="fn">add</span>(<span class="nm">4</span>)\n\nt = (<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>)   <span class="cm"># immutable</span>\nt[<span class="nm">0</span>]               <span class="cm"># 10</span>` },
-      { title: "List comprehension", code: `squares = [x**<span class="nm">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">5</span>)]\n<span class="cm"># [0, 1, 4, 9, 16]</span>\n\nevens = [x <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">10</span>) <span class="kw">if</span> x%<span class="nm">2</span>==<span class="nm">0</span>]` },
-    ],
-    exercises: [
-      { title: "List basics", diff: "easy", desc: "Create a list of 5 fruits. Print the first and last item.", hint: "fruits[0] and fruits[-1]", check: o => o.trim().split('\n').length >= 2 },
-      { title: "Append and remove", diff: "easy", desc: "Start with <code>nums = [1,2,3,4,5]</code>. Append 6, remove 3, then print the list.", hint: "nums.append(6)\nnums.remove(3)", check: o => o.includes('6') && !o.includes(' 3,') && !o.includes('[3,') },
-      { title: "Slicing", diff: "easy", desc: "Given <code>letters = ['a','b','c','d','e','f']</code>, print the first 3 and the last 2.", hint: "letters[:3] and letters[-2:]", check: o => o.includes('a') && o.includes('f') },
-      { title: "Dict lookup", diff: "easy", desc: "Create a dict with keys <code>name</code>, <code>age</code>, <code>city</code>. Print all three values.", hint: "d = {'name': '...', 'age': ..., 'city': '...'}", check: o => o.trim().split('\n').length >= 3 },
-      { title: "Count with dict", diff: "medium", desc: "Count how many times each letter appears in <code>'mississippi'</code>. Store in a dict and print it.", hint: "counts = {}\nfor ch in word:\n    counts[ch] = counts.get(ch, 0) + 1", check: o => o.includes('4') && o.includes('s') },
-      { title: "List comprehension squares", diff: "medium", desc: "Use a list comprehension to create a list of squares of 1–10. Print it.", hint: "[x**2 for x in range(1, 11)]", check: o => o.includes('100') && o.includes('1') },
-      { title: "Filter with comprehension", diff: "medium", desc: "From <code>nums = [3,15,8,22,7,19,4,11]</code>, use a list comprehension to get all numbers greater than 10.", hint: "[n for n in nums if n > 10]", check: o => o.includes('15') && o.includes('22') },
-      { title: "Unique values", diff: "medium", desc: "Given <code>data = [1,2,2,3,4,4,4,5]</code>, use a set to get unique values and print them sorted.", hint: "sorted(set(data))", check: o => o.includes('1') && o.includes('5') },
-      { title: "Dict from lists", diff: "medium", desc: "Given <code>keys = ['a','b','c']</code> and <code>vals = [1,2,3]</code>, create a dict using <code>zip()</code>. Print it.", hint: "dict(zip(keys, vals))", check: o => o.includes('a') && o.includes('1') },
-      { title: "Nested dict", diff: "hard", desc: "Create a dict of 3 students with scores: <code>{'Alice': 85, 'Bob': 92, 'Clara': 78}</code>. Print the name of the highest scorer.", hint: "max(scores, key=lambda k: scores[k])", check: o => o.toLowerCase().includes('bob') },
-      { title: "Flatten a list", diff: "hard", desc: "Flatten <code>nested = [[1,2],[3,4],[5,6]]</code> into a single list using a list comprehension.", hint: "[x for sub in nested for x in sub]", check: o => o.includes('1') && o.includes('6') },
-      { title: "Word frequency", diff: "hard", desc: "Given <code>text = 'the cat sat on the mat the cat'</code>, count word frequency and print the most common word.", hint: "counts = {}\nfor w in text.split():\n    counts[w] = counts.get(w, 0) + 1\nprint(max(counts, key=counts.get))", check: o => o.toLowerCase().includes('the') },
-    ]
-  },
-  {
-    id: "strings", label: "Strings", icon: "🔤",
-    intro: "Strings are everywhere in data science — cleaning, parsing, and transforming text is a daily task.",
-    cheatsheet: [
-      { title: "Common string methods", code: `s = <span class="st">"  Hello World  "</span>\ns.<span class="fn">strip</span>()        <span class="cm"># "Hello World"</span>\ns.<span class="fn">lower</span>()        <span class="cm"># "  hello world  "</span>\ns.<span class="fn">upper</span>()        <span class="cm"># "  HELLO WORLD  "</span>\ns.<span class="fn">replace</span>(<span class="st">"Hello"</span>, <span class="st">"Hi"</span>)\ns.<span class="fn">split</span>()        <span class="cm"># ["Hello", "World"]</span>` },
-      { title: "Slicing & indexing", code: `s = <span class="st">"Python"</span>\ns[<span class="nm">0</span>]      <span class="cm"># 'P'</span>\ns[-<span class="nm">1</span>]     <span class="cm"># 'n'</span>\ns[<span class="nm">1</span>:<span class="nm">4</span>]    <span class="cm"># 'yth'</span>\ns[::<span class="nm">-1</span>]   <span class="cm"># 'nohtyP'</span>` },
-      { title: "f-strings", code: `name = <span class="st">"Kushagr"</span>; age = <span class="nm">25</span>\n<span class="fn">print</span>(<span class="st">f"My name is {name}, age {age}"</span>)\n<span class="fn">print</span>(<span class="st">f"Pi ≈ {3.14159:.2f}"</span>)  <span class="cm"># Pi ≈ 3.14</span>` },
-      { title: "in, find, startswith", code: `s = <span class="st">"data science"</span>\n<span class="st">"data"</span> <span class="kw">in</span> s          <span class="cm"># True</span>\ns.<span class="fn">find</span>(<span class="st">"sci"</span>)         <span class="cm"># 5</span>\ns.<span class="fn">startswith</span>(<span class="st">"data"</span>) <span class="cm"># True</span>` },
-    ],
-    exercises: [
-      { title: "Reverse a string", diff: "easy", desc: "Reverse the string <code>'Python'</code> using slicing and print it.", hint: "s[::-1]", check: o => o.includes('nohtyP') },
-      { title: "Uppercase & lowercase", diff: "easy", desc: "Take <code>'Hello World'</code> and print it in all uppercase and all lowercase.", hint: ".upper() and .lower()", check: o => o.includes('HELLO WORLD') && o.includes('hello world') },
-      { title: "Strip whitespace", diff: "easy", desc: "Clean up <code>'   data science   '</code> and print without extra spaces.", hint: ".strip()", check: o => o.includes('data science') },
-      { title: "Count words", diff: "easy", desc: "Count the number of words in <code>'the quick brown fox'</code> using <code>split()</code>.", hint: "len(s.split())", check: o => o.trim().includes('4') },
-      { title: "f-string formatting", diff: "easy", desc: "Create variables for your name and age, then print: <code>My name is X and I am Y years old.</code>", hint: "f'My name is {name} and I am {age} years old.'", check: o => o.toLowerCase().includes('my name is') },
-      { title: "Replace", diff: "medium", desc: "In <code>'I love cats and cats love me'</code>, replace all <code>'cats'</code> with <code>'dogs'</code> and print.", hint: ".replace('cats', 'dogs')", check: o => o.includes('dogs') && !o.includes('cats') },
-      { title: "Check palindrome", diff: "medium", desc: "Check if <code>'racecar'</code> is a palindrome using only string operations. Print <code>True</code> or <code>False</code>.", hint: "s == s[::-1]", check: o => o.trim().includes('True') },
-      { title: "Title case", diff: "medium", desc: "Convert <code>'machine learning is fun'</code> to title case and print.", hint: ".title()", check: o => o.includes('Machine Learning Is Fun') },
-      { title: "CSV split", diff: "medium", desc: "Given <code>row = 'Alice,29,Berlin,Engineer'</code>, split by comma and print each field on its own line.", hint: "row.split(',')", check: o => o.includes('Alice') && o.includes('29') },
-      { title: "Count character frequency", diff: "medium", desc: "Count how many times the letter <code>'s'</code> appears in <code>'mississippi'</code>.", hint: "s.count('s')", check: o => o.trim().includes('4') },
-      { title: "Extract domain from email", diff: "hard", desc: "Given <code>email = 'kushagr@gmail.com'</code>, extract and print only the domain part (<code>gmail.com</code>).", hint: "email.split('@')[1]", check: o => o.includes('gmail.com') },
-      { title: "Truncate and ellipsis", diff: "hard", desc: "Write code that truncates any string longer than 20 chars and adds <code>...</code>. Test with <code>'Data science is an exciting field'</code>.", hint: "if len(s) > 20:\n    s = s[:20] + '...'", check: o => o.includes('...') },
-      { title: "Clean and split", diff: "hard", desc: "Given <code>raw = '  apple , banana , kiwi , mango  '</code>, produce a clean list with no spaces.", hint: "[x.strip() for x in raw.split(',')]", check: o => o.includes('apple') && o.includes('mango') },
-    ]
-  },
-  {
-    id: "fileio", label: "Files & Errors", icon: "📁",
-    intro: "Reading data files and handling errors gracefully are must-have skills for any data pipeline.",
-    cheatsheet: [
-      { title: "Reading & writing files", code: `<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"file.txt"</span>, <span class="st">"w"</span>) <span class="kw">as</span> f:\n    f.<span class="fn">write</span>(<span class="st">"Hello\\n"</span>)\n\n<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"file.txt"</span>, <span class="st">"r"</span>) <span class="kw">as</span> f:\n    content = f.<span class="fn">read</span>()` },
-      { title: "try / except / finally", code: `<span class="kw">try</span>:\n    result = <span class="nm">10</span> / <span class="nm">0</span>\n<span class="kw">except</span> ZeroDivisionError:\n    <span class="fn">print</span>(<span class="st">"Can't divide by zero!"</span>)\n<span class="kw">finally</span>:\n    <span class="fn">print</span>(<span class="st">"Done"</span>)` },
-      { title: "Common exceptions", code: `ValueError      <span class="cm"># bad value: int("abc")</span>\nTypeError       <span class="cm"># wrong type: "a" + 1</span>\nKeyError        <span class="cm"># missing dict key</span>\nIndexError      <span class="cm"># list index out of range</span>\nZeroDivisionError` },
-    ],
-    exercises: [
-      { title: "Safe division", diff: "easy", desc: "Write code that divides 10 by 0 inside a <code>try</code> block and prints <code>Cannot divide by zero</code> in the <code>except</code>.", hint: "try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print('Cannot divide by zero')", check: o => o.toLowerCase().includes('zero') || o.toLowerCase().includes('divide') },
-      { title: "Safe int conversion", diff: "easy", desc: "Try to convert <code>'hello'</code> to an integer. Catch the <code>ValueError</code> and print <code>Not a number</code>.", hint: "try:\n    int('hello')\nexcept ValueError:\n    print('Not a number')", check: o => o.toLowerCase().includes('not a number') || o.toLowerCase().includes('number') },
-      { title: "KeyError handling", diff: "easy", desc: "Given <code>d = {'a': 1, 'b': 2}</code>, try to access key <code>'z'</code> and handle the <code>KeyError</code> gracefully.", hint: "except KeyError:\n    print('Key not found')", check: o => o.toLowerCase().includes('key') || o.toLowerCase().includes('found') },
-      { title: "Index error", diff: "easy", desc: "Create a list of 3 items and try to access index 10. Catch the <code>IndexError</code>.", hint: "except IndexError:\n    print('Index out of range')", check: o => o.toLowerCase().includes('index') || o.toLowerCase().includes('range') },
-      { title: "Finally block", diff: "medium", desc: "Write a <code>try/except/finally</code> block. In finally, always print <code>Cleanup done</code>.", hint: "finally:\n    print('Cleanup done')", check: o => o.toLowerCase().includes('cleanup done') },
-      { title: "Multiple except", diff: "medium", desc: "Write one <code>try</code> block that handles both <code>ValueError</code> and <code>ZeroDivisionError</code> with different messages.", hint: "except ValueError:\n    print('Bad value')\nexcept ZeroDivisionError:\n    print('Zero division')", check: o => o.trim().split('\n').length >= 1 },
-      { title: "Write to file", diff: "medium", desc: "Write three lines to a file called <code>test.txt</code>, then read it back and print the contents.", hint: "with open('test.txt', 'w') as f:\n    f.write('line1\\nline2\\nline3\\n')", check: o => o.includes('line') },
-      { title: "Count lines in file", diff: "medium", desc: "Write 5 lines to a file, read it back and print how many lines it has.", hint: "lines = f.readlines()\nprint(len(lines))", check: o => o.trim().includes('5') },
-      { title: "Raise your own error", diff: "hard", desc: "Write <code>check_age(age)</code> that raises a <code>ValueError</code> with message <code>Age must be positive</code> if age < 0. Test with <code>-5</code>.", hint: "if age < 0:\n    raise ValueError('Age must be positive')", check: o => o.toLowerCase().includes('positive') || o.toLowerCase().includes('age') },
-      { title: "CSV reader", diff: "hard", desc: "Write 3 rows of CSV data (name,score format) to a file, read it back line by line, and print each name and score separately.", hint: "for line in f:\n    parts = line.strip().split(',')\n    print(parts[0], parts[1])", check: o => o.trim().split('\n').length >= 3 },
-    ]
-  },
-  {
-    id: "numpy", label: "NumPy", icon: "🔢",
-    intro: "NumPy is the backbone of numerical computing in Python. It gives you fast arrays and vectorized math — no loops needed.",
-    cheatsheet: [
-      { title: "Creating arrays", code: `<span class="kw">import</span> numpy <span class="kw">as</span> np\n\nnp.<span class="fn">array</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>])        <span class="cm"># from list</span>\nnp.<span class="fn">zeros</span>(<span class="nm">5</span>)           <span class="cm"># [0. 0. 0. 0. 0.]</span>\nnp.<span class="fn">ones</span>((<span class="nm">2</span>,<span class="nm">3</span>))         <span class="cm"># 2x3 of 1s</span>\nnp.<span class="fn">arange</span>(<span class="nm">0</span>,<span class="nm">10</span>,<span class="nm">2</span>)     <span class="cm"># [0 2 4 6 8]</span>` },
-      { title: "Array operations", code: `a = np.<span class="fn">array</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>])\na * <span class="nm">2</span>      <span class="cm"># [2 4 6]</span>\na + <span class="nm">10</span>     <span class="cm"># [11 12 13]</span>\na[a &gt; <span class="nm">1</span>]  <span class="cm"># [2 3] boolean mask</span>` },
-      { title: "Stats & shape", code: `a.<span class="fn">mean</span>()  a.<span class="fn">sum</span>()  a.<span class="fn">std</span>()\na.<span class="fn">min</span>()   a.<span class="fn">max</span>()  a.<span class="fn">shape</span>\na.<span class="fn">reshape</span>(<span class="nm">3</span>,<span class="nm">4</span>)  <span class="cm"># change shape</span>` },
-    ],
-    exercises: [
-      { title: "Create array", diff: "easy", desc: "Import numpy and create an array from <code>[10, 20, 30, 40, 50]</code>. Print it and its dtype.", hint: "import numpy as np\na = np.array([10,20,30,40,50])\nprint(a, a.dtype)", check: o => o.includes('10') && o.includes('50') },
-      { title: "Zeros and ones", diff: "easy", desc: "Create an array of 5 zeros and an array of 5 ones. Print both.", hint: "np.zeros(5)\nnp.ones(5)", check: o => o.includes('0') && o.includes('1') },
-      { title: "arange", diff: "easy", desc: "Use <code>np.arange</code> to create an array of even numbers from 0 to 18. Print it.", hint: "np.arange(0, 20, 2)", check: o => o.includes('0') && o.includes('18') },
-      { title: "Vectorized math", diff: "easy", desc: "Create <code>a = np.array([1,2,3,4,5])</code>. Multiply every element by 3 and add 10. Print the result.", hint: "a * 3 + 10", check: o => o.includes('13') && o.includes('25') },
-      { title: "Array stats", diff: "medium", desc: "Create <code>a = np.array([4,7,2,9,1,6,3,8,5])</code>. Print the mean, min, max, and std.", hint: "a.mean(), a.min(), a.max(), a.std()", check: o => o.includes('5') && o.includes('9') && o.includes('1') },
-      { title: "Boolean masking", diff: "medium", desc: "From <code>a = np.array([3,15,8,22,7,19,4,11])</code>, extract values greater than 10 using a boolean mask.", hint: "a[a > 10]", check: o => o.includes('15') && o.includes('22') && o.includes('19') },
-      { title: "2D array", diff: "medium", desc: "Create a 3×3 array of ones and multiply the whole array by 5. Print the result.", hint: "np.ones((3,3)) * 5", check: o => o.includes('5') },
-      { title: "Reshape", diff: "medium", desc: "Create <code>np.arange(12)</code> and reshape it into a 3×4 matrix. Print the shape and the array.", hint: "a = np.arange(12).reshape(3,4)", check: o => o.includes('11') },
-      { title: "Normalize array", diff: "hard", desc: "Normalize <code>a = np.array([10,20,30,40,50])</code> to range 0–1 using <code>(a - a.min()) / (a.max() - a.min())</code>.", hint: "(a - a.min()) / (a.max() - a.min())", check: o => o.includes('0.') && o.includes('1.') },
-      { title: "Matrix multiply", diff: "hard", desc: "Create two 2×2 matrices and multiply them using <code>np.dot()</code> or <code>@</code>. Print the result.", hint: "A @ B  or  np.dot(A, B)", check: o => o.trim().split('\n').length >= 2 },
-      { title: "Argmax & argsort", diff: "hard", desc: "From <code>scores = np.array([72, 88, 61, 95, 79])</code>, print the index of the highest score and the indices that sort the array.", hint: "np.argmax(scores)\nnp.argsort(scores)", check: o => o.includes('3') },
-    ]
-  },
-  {
-    id: "pandas", label: "Pandas", icon: "🐼",
-    intro: "Pandas is THE library for tabular data. DataFrames are like programmable spreadsheets.",
-    cheatsheet: [
-      { title: "Creating a DataFrame", code: `<span class="kw">import</span> pandas <span class="kw">as</span> pd\n\ndf = pd.<span class="fn">DataFrame</span>({\n    <span class="st">"name"</span>: [<span class="st">"Alice"</span>, <span class="st">"Bob"</span>, <span class="st">"Clara"</span>],\n    <span class="st">"score"</span>: [<span class="nm">85</span>, <span class="nm">92</span>, <span class="nm">78</span>]\n})` },
-      { title: "Selecting & filtering", code: `df[<span class="st">"name"</span>]             <span class="cm"># column</span>\ndf[[<span class="st">"name"</span>,<span class="st">"score"</span>]]   <span class="cm"># multi cols</span>\ndf[df[<span class="st">"score"</span>] &gt; <span class="nm">80</span>]  <span class="cm"># filter rows</span>\ndf.<span class="fn">iloc</span>[<span class="nm">0</span>]              <span class="cm"># first row</span>` },
-      { title: "Info & stats", code: `df.<span class="fn">head</span>()    df.<span class="fn">shape</span>\ndf.<span class="fn">describe</span>()  <span class="cm"># summary stats</span>\ndf.<span class="fn">isnull</span>().<span class="fn">sum</span>()  <span class="cm"># null counts</span>` },
-      { title: "Groupby & sort", code: `df.<span class="fn">groupby</span>(<span class="st">"city"</span>)[<span class="st">"score"</span>].<span class="fn">mean</span>()\ndf.<span class="fn">sort_values</span>(<span class="st">"score"</span>, ascending=<span class="kw">False</span>)\ndf[<span class="st">"grade"</span>] = df[<span class="st">"score"</span>] * <span class="nm">1.1</span>` },
-    ],
-    exercises: [
-      { title: "Create DataFrame", diff: "easy", desc: "Create a DataFrame with columns <code>name</code>, <code>age</code>, <code>city</code> for 3 people. Print it.", hint: "pd.DataFrame({'name': [...], 'age': [...], 'city': [...]})", check: o => o.includes('name') || o.includes('age') },
-      { title: "Select a column", diff: "easy", desc: "From the DataFrame above, print only the <code>name</code> column.", hint: "df['name']", check: o => o.trim().split('\n').length >= 2 },
-      { title: "Shape and columns", diff: "easy", desc: "Print the shape of your DataFrame and its column names.", hint: "df.shape\ndf.columns", check: o => o.includes('3') },
-      { title: "Add a column", diff: "easy", desc: "Add a <code>score</code> column with values <code>[85, 92, 78]</code>. Print the updated DataFrame.", hint: "df['score'] = [85, 92, 78]", check: o => o.includes('85') && o.includes('92') && o.includes('78') },
-      { title: "Filter rows", diff: "medium", desc: "Filter and print only rows where <code>score > 80</code>.", hint: "df[df['score'] > 80]", check: o => o.includes('85') && o.includes('92') && !o.includes('78') },
-      { title: "Sort values", diff: "medium", desc: "Sort the DataFrame by <code>score</code> in descending order and print.", hint: "df.sort_values('score', ascending=False)", check: o => { const i92 = o.indexOf('92'); const i85 = o.indexOf('85'); return i92 < i85; } },
-      { title: "Describe", diff: "medium", desc: "Create a DataFrame with a numeric column of at least 5 values. Print <code>.describe()</code> output.", hint: "df.describe()", check: o => o.includes('mean') || o.includes('std') || o.includes('count') },
-      { title: "Groupby mean", diff: "medium", desc: "Create a DataFrame with <code>city</code> and <code>sales</code> columns (repeated cities). Use <code>groupby</code> to find average sales per city.", hint: "df.groupby('city')['sales'].mean()", check: o => o.trim().split('\n').length >= 2 },
-      { title: "Null handling", diff: "medium", desc: "Create a DataFrame with some <code>None</code> values. Count nulls with <code>.isnull().sum()</code>, then fill with 0.", hint: "df.isnull().sum()\ndf.fillna(0)", check: o => o.includes('0') },
-      { title: "New computed column", diff: "hard", desc: "Create a scores DataFrame. Add a <code>grade</code> column: ≥90→'A', ≥80→'B', else→'C'. Print the result.", hint: "df['grade'] = df['score'].apply(lambda s: 'A' if s>=90 else 'B' if s>=80 else 'C')", check: o => o.includes('A') && o.includes('B') && o.includes('C') },
-      { title: "Merge DataFrames", diff: "hard", desc: "Create two DataFrames sharing a <code>name</code> column. Merge them on <code>name</code> and print.", hint: "pd.merge(df1, df2, on='name')", check: o => o.trim().split('\n').length >= 3 },
-      { title: "Pivot aggregation", diff: "hard", desc: "Create a DataFrame with <code>category</code>, <code>month</code>, <code>sales</code>. Use <code>groupby(['category','month']).sum()</code> and print.", hint: "df.groupby(['category','month'])['sales'].sum()", check: o => o.trim().split('\n').length >= 2 },
-    ]
-  }
-];
-
-let state = { currentTopic: 0, currentView: 'cheatsheet', currentEx: 0, solved: {}, hintShown: {} };
-function key(t, e) { return `${t}-${e}`; }
-function totalSolved() { return Object.values(state.solved).filter(Boolean).length; }
-function totalExercises() { return curriculum.reduce((s,t) => s + t.exercises.length, 0); }
-
-function updateProgress() {
-  const s = totalSolved(), t = totalExercises();
-  document.getElementById('progress-text').textContent = `${s} / ${t} solved`;
-  document.getElementById('progress-fill').style.width = `${(s/t)*100}%`;
-}
-
-function renderTabs() {
-  const tabs = document.getElementById('topic-tabs');
-  tabs.innerHTML = curriculum.map((t,i) => {
-    const allSolved = t.exercises.every((_,j) => state.solved[key(i,j)]);
-    return `<button class="topic-tab ${i===state.currentTopic?'active':''}" onclick="selectTopic(${i})">
-      <div class="tab-check ${allSolved?'done':''}">✓</div>${t.icon} ${t.label}
-    </button>`;
-  }).join('');
-}
-
-function renderSidebar() {
-  const topic = curriculum[state.currentTopic];
-  let html = `<div class="section-label">Overview</div>`;
-  html += `<div class="ex-item ${state.currentView==='cheatsheet'?'active':''}" onclick="showCheatsheet()">📖 Cheat sheet</div>`;
-  html += `<div class="section-label" style="margin-top:8px">Exercises</div>`;
-  topic.exercises.forEach((ex, i) => {
-    const s = state.solved[key(state.currentTopic, i)];
-    const active = state.currentView==='exercise' && state.currentEx===i;
-    html += `<div class="ex-item ${active?'active':''} ${s?'solved':''}" onclick="showExercise(${i})">
-      <div class="diff-dot ${ex.diff}"></div>
-      <span class="ex-num">${String(i+1).padStart(2,'0')}</span>
-      <span>${ex.title}</span>
-      ${s ? '<span class="check-icon">✓</span>' : ''}
-    </div>`;
-  });
-  document.getElementById('sidebar').innerHTML = html;
-}
-
-function showCheatsheet() {
-  state.currentView = 'cheatsheet';
-  const topic = curriculum[state.currentTopic];
-  document.getElementById('cheatsheet').innerHTML = `
-    <div class="cs-title">${topic.icon} ${topic.label}</div>
-    <div class="cs-sub">${topic.intro}</div>
-    ${topic.cheatsheet.map(b => `<div class="cs-block"><div class="cs-block-title">${b.title}</div><div class="cs-code">${b.code}</div></div>`).join('')}
-    <button class="start-btn" onclick="showExercise(0)">Start Exercises →</button>
-  `;
-  document.getElementById('cheatsheet').classList.add('visible');
-  document.getElementById('exercise-panel').classList.remove('visible');
-  document.getElementById('congrats').classList.remove('visible');
-  renderSidebar();
-}
-
-function showExercise(i) {
-  state.currentView = 'exercise';
-  state.currentEx = i;
-  const topic = curriculum[state.currentTopic];
-  const ex = topic.exercises[i];
-  const k = key(state.currentTopic, i);
-  document.getElementById('exercise-panel').innerHTML = `
-    <div class="ex-header">
-      <div class="ex-number">${state.currentTopic+1}.${String(i+1).padStart(2,'0')}</div>
-      <div class="ex-info">
-        <div class="ex-title-main">${ex.title}</div>
-        <div class="diff-badge ${ex.diff}"><div class="diff-dot ${ex.diff}" style="width:6px;height:6px"></div>${ex.diff.charAt(0).toUpperCase()+ex.diff.slice(1)}</div>
-        <div class="ex-description">${ex.desc}</div>
-      </div>
-    </div>
-    <textarea class="code-area" id="code-area" placeholder="# write your code here" spellcheck="false">${state.solved[k]?'# ✓ Already solved! Try again or move on.':''}</textarea>
-    <div class="action-row">
-      <button class="btn btn-run" onclick="runCode(${i})">▶ Run</button>
-      <button class="btn btn-hint" onclick="toggleHint(${i})">💡 Hint</button>
-    </div>
-    <div class="hint-box" id="hint-box" style="display:${state.hintShown[k]?'block':'none'}">${ex.hint}</div>
-    <div class="output-box" id="output-box">Output will appear here...</div>
-    <div class="nav-row">
-      ${i > 0 ? `<button class="btn btn-nav" onclick="showExercise(${i-1})">← Previous</button>` : ''}
-      ${i < topic.exercises.length-1 ? `<button class="btn btn-nav" onclick="showExercise(${i+1})">Next →</button>` : ''}
-    </div>
-  `;
-  document.getElementById('cheatsheet').classList.remove('visible');
-  document.getElementById('exercise-panel').classList.add('visible');
-  document.getElementById('congrats').classList.remove('visible');
-  renderSidebar();
-}
-
-function toggleHint(i) {
-  const k = key(state.currentTopic, i);
-  const box = document.getElementById('hint-box');
-  if (!box) return;
-  const show = box.style.display === 'none' || box.style.display === '';
-  box.style.display = show ? 'block' : 'none';
-  state.hintShown[k] = show;
-}
-
-function pythonToJS(code) {
-  let lines = code.split('\n'), js = '', indentStack = [0], declared = new Set();
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i], stripped = line.trimStart();
-    if (!stripped || stripped.startsWith('#')) continue;
-    let indent = line.length - stripped.length;
-    while (indent < indentStack[indentStack.length-1]) { indentStack.pop(); js += '}\n'; }
-    let out = stripped;
-    out = out.replace(/^import numpy as np$/, 'const np = null;');
-    out = out.replace(/^import pandas as pd$/, 'const pd = null;');
-    out = out.replace(/^import .*$/, '');
-    out = out.replace(/^for (\w+) in range\((\S+)\)\s*:/, (_, v, n) => `for(let ${v}=0;${v}<${n};${v}++){`);
-    out = out.replace(/^for (\w+) in range\((\S+),\s*(\S+)\)\s*:/, (_, v, a, b) => `for(let ${v}=${a};${v}<${b};${v}++){`);
-    out = out.replace(/^for (\w+) in range\((\S+),\s*(\S+),\s*(-?\d+)\)\s*:/, (_, v, a, b, s) => parseInt(s)>0?`for(let ${v}=${a};${v}<${b};${v}+=${s}){`:`for(let ${v}=${a};${v}>${b};${v}+=(${s})){`);
-    out = out.replace(/^for (\w+) in (\w+)\s*:/, (_, v, arr) => `for(const ${v} of ${arr}){`);
-    out = out.replace(/^for (\w+) in \[([^\]]+)\]\s*:/, (_, v, arr) => `for(const ${v} of [${arr}]){`);
-    out = out.replace(/^while (.+)\s*:/, (_, c) => `while(${c.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||')}){`);
-    out = out.replace(/^if (.+)\s*:/, (_, c) => `if(${c.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!')}){`);
-    out = out.replace(/^elif (.+)\s*:/, (_, c) => `}else if(${c.replace(/\band\b/g,'&&').replace(/\bor\b/g,'||')}){`);
-    out = out.replace(/^else\s*:/, '}else{');
-    out = out.replace(/^def (\w+)\(([^)]*)\)\s*:/, (_, n, a) => `function ${n}(${a}){`);
-    out = out.replace(/^return (.+)/, 'return $1;');
-    out = out.replace(/^return$/, 'return;');
-    out = out.replace(/^break$/, 'break;');
-    out = out.replace(/^continue$/, 'continue;');
-    out = out.replace(/^raise (\w+)\((.+)\)/, (_, e, m) => `throw new Error(${m});`);
-    out = out.replace(/^try\s*:/, 'try{');
-    out = out.replace(/^except.*:/, '}catch(_e){');
-    out = out.replace(/^finally\s*:/, '}finally{');
-    out = out.replace(/print\(f"([^"]+)"\)/g, (_, t) => `print(\`${t.replace(/\{([^}]+)\}/g,'${$1}')}\`);`);
-    out = out.replace(/print\(f'([^']+)'\)/g, (_, t) => `print(\`${t.replace(/\{([^}]+)\}/g,'${$1}')}\`);`);
-    out = out.replace(/print\((.+)\)/g, (_, a) => `print(${a});`);
-    out = out.replace(/(\w+) \+= (.+)/, '$1 += $2;');
-    out = out.replace(/(\w+) -= (.+)/, '$1 -= $2;');
-    out = out.replace(/(\w+) \*= (.+)/, '$1 *= $2;');
-    out = out.replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null');
-    out = out.replace(/\blen\((\w+)\)/g,'$1.length');
-    out = out.replace(/\bstr\(([^)]+)\)/g,'String($1)');
-    out = out.replace(/\bint\(([^)]+)\)/g,'parseInt($1)');
-    out = out.replace(/\bfloat\(([^)]+)\)/g,'parseFloat($1)');
-    out = out.replace(/\babs\(([^)]+)\)/g,'Math.abs($1)');
-    out = out.replace(/\bmin\(([^)]+)\)/g,'_min($1)');
-    out = out.replace(/\bmax\(([^)]+)\)/g,'_max($1)');
-    out = out.replace(/\bsum\(([^)]+)\)/g,'_sum($1)');
-    out = out.replace(/\bsorted\(([^)]+)\)/g,'_sorted($1)');
-    out = out.replace(/\brange\(([^)]+)\)/g,'_range($1)');
-    out = out.replace(/\.append\(/g,'.push(');
-    out = out.replace(/\.strip\(\)/g,'.trim()');
-    out = out.replace(/\.lower\(\)/g,'.toLowerCase()');
-    out = out.replace(/\.upper\(\)/g,'.toUpperCase()');
-    out = out.replace(/\.split\(\)/g,".split(' ')");
-    out = out.replace(/\.split\(([^)]+)\)/g,'.split($1)');
-    out = out.replace(/\.replace\(([^,]+),\s*([^)]+)\)/g,'.replace(new RegExp($1,"g"),$2)');
-    out = out.replace(/\.count\(([^)]+)\)/g,(_, c) => `.split(${c}).length-1`);
-    out = out.replace(/\.startswith\(/g,'.startsWith(');
-    out = out.replace(/\.endswith\(/g,'.endsWith(');
-    out = out.replace(/\.title\(\)/g,".replace(/\\b\\w/g,c=>c.toUpperCase())");
-    out = out.replace(/\.find\(([^)]+)\)/g,'.indexOf($1)');
-    out = out.replace(/\.get\(([^,]+),\s*([^)]+)\)/g,'?.[String($1)] ?? $2');
-    const am = out.match(/^(\w+) = (.+)/);
-    if (am && !out.startsWith('let ') && !out.startsWith('const ') && !out.startsWith('for') && !out.startsWith('while') && !out.startsWith('if') && !out.startsWith('function') && !out.startsWith('}') && !out.startsWith('return') && !out.startsWith('throw')) {
-      if (!declared.has(am[1])) { out = 'let ' + out; declared.add(am[1]); }
-    }
-    if (out.endsWith('{')) indentStack.push(indent + 1);
-    js += out + '\n';
-  }
-  while (indentStack.length > 1) { js += '}\n'; indentStack.pop(); }
-  return js;
-}
-
-function runCode(i) {
-  const ex = curriculum[state.currentTopic].exercises[i];
-  const code = document.getElementById('code-area').value.trim();
-  const outBox = document.getElementById('output-box');
-  if (!code || code.startsWith('#')) { outBox.className='output-box'; outBox.textContent='Write some code and click Run!'; return; }
-  let output = [];
-  const fakePrint = (...args) => output.push(args.map(a => a===null?'None':a===true?'True':a===false?'False':Array.isArray(a)?'['+a.join(', ')+']':String(a)).join(' '));
-  const helpers = `
-    function _min(){const a=arguments.length===1&&Array.isArray(arguments[0])?arguments[0]:[...arguments];return Math.min(...a);}
-    function _max(){const a=arguments.length===1&&Array.isArray(arguments[0])?arguments[0]:[...arguments];return Math.max(...a);}
-    function _sum(a){return a.reduce((s,x)=>s+x,0);}
-    function _sorted(a){const c=[...a];c.sort((x,y)=>x>y?1:-1);return c;}
-    function _range(a,b,s){const r=[];if(b===undefined){for(let i=0;i<a;i++)r.push(i);}else{const st=s||1;if(st>0){for(let i=a;i<b;i+=st)r.push(i);}else{for(let i=a;i>b;i+=st)r.push(i);}}return r;}
-    function zip(a,b){return a.map((x,i)=>[x,b[i]]);}
-  `;
-  try {
-    const jsCode = pythonToJS(code);
-    const fn = new Function('print', helpers + jsCode);
-    fn(fakePrint);
-    const result = output.join('\n');
-    const ok = ex.check(result);
-    outBox.textContent = (result || '(no output printed)') + (ok ? '\n\n✓ Correct!' : '');
-    outBox.className = 'output-box ' + (ok ? 'success' : '');
-    if (ok) {
-      state.solved[key(state.currentTopic, i)] = true;
-      renderSidebar(); renderTabs(); updateProgress();
-      const topic = curriculum[state.currentTopic];
-      if (topic.exercises.every((_,j) => state.solved[key(state.currentTopic,j)])) {
-        setTimeout(() => {
-          document.getElementById('exercise-panel').classList.remove('visible');
-          document.getElementById('congrats').classList.add('visible');
-        }, 1200);
-      }
-    }
-  } catch(e) {
-    outBox.textContent = 'Error: ' + e.message + '\n\nTip: Check your indentation and syntax.';
-    outBox.className = 'output-box error';
-  }
-}
-
-function selectTopic(i) {
-  state.currentTopic = i;
-  state.currentView = 'cheatsheet';
-  showCheatsheet(); renderTabs();
-}
-
-renderTabs(); showCheatsheet(); updateProgress();
-</script>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1">&lt;title&gt;pyDS Track — Python for Data Science&lt;/title&gt;</p>
+<p class="p1">&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</p>
+<p class="p1">&lt;link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Syne:wght@400;600;700;800&amp;display=swap" rel="stylesheet"&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>:root {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--bg: #0d0d0f;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--surface: #141417;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--surface2: #1c1c21;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--border: #2a2a32;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--accent: #7c6ef5;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--accent2: #f5a623;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--accent3: #4ecdc4;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--text: #e8e8f0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--text2: #8888a0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--easy: #4ecdc4;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--med: #f5a623;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--hard: #f55a5a;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>--radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>* { box-sizing: border-box; margin: 0; padding: 0; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>html, body {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'Syne', sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--bg);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-direction: column;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 100vw;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>/* HEADER */</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.header {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 20px 24px 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-bottom: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--bg);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>position: sticky;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>top: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>z-index: 100;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.header-top {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>justify-content: space-between;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.logo {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>letter-spacing: -0.5px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.logo span { color: var(--accent); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.progress-bar-wrap {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.progress-bar {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 140px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 4px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 2px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.progress-fill {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: linear-gradient(90deg, var(--accent), var(--accent3));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 2px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: width 0.4s ease;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.topic-tabs {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 2px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow-x: auto;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scrollbar-width: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding-bottom: 0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.topic-tabs::-webkit-scrollbar { display: none; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.topic-tab {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 10px 16px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 600;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'Syne', sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: transparent;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-bottom: 2px solid transparent;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: all 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>white-space: nowrap;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 6px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.topic-tab:hover { color: var(--text); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.topic-tab.active { color: var(--accent); border-bottom-color: var(--accent); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.tab-check {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.tab-check.done { background: var(--accent3); color: #000; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>/* MAIN */</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.main {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex: 1;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>min-height: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow: hidden;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>/* SIDEBAR */</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.sidebar {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 260px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-right: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow-y: auto;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 16px 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.sidebar::-webkit-scrollbar { width: 4px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.section-label {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 700;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>letter-spacing: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>text-transform: uppercase;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 8px 8px 4px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-item {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 8px 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: all 0.15s;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px solid transparent;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-item:hover { background: var(--surface2); color: var(--text); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-item.active { background: var(--surface2); color: var(--text); border-color: var(--border); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-item.solved { color: var(--accent3); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-dot {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 7px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 7px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-dot.easy { background: var(--easy); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-dot.medium { background: var(--med); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-dot.hard { background: var(--hard); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-num {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.check-icon { margin-left: auto; font-size: 12px; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>/* CONTENT */</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.content {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex: 1;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow-y: auto;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 24px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.content::-webkit-scrollbar { width: 4px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cheatsheet { display: none; max-width: 720px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cheatsheet.visible { display: block; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-title {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 22px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 4px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>letter-spacing: -0.5px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-sub {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.6;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-block {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: var(--radius);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 16px 18px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-block-title {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 700;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--accent);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>letter-spacing: 0.5px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>text-transform: uppercase;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: #c9d1d9;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>white-space: pre;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.8;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>overflow-x: auto;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code .kw { color: #ff79c6; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code .fn { color: #50fa7b; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code .cm { color: #6272a4; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code .st { color: #f1fa8c; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cs-code .nm { color: #bd93f9; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.start-btn {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 12px 24px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--accent);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: #fff;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: var(--radius);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'Syne', sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 700;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: opacity 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.start-btn:hover { opacity: 0.85; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.exercise-panel { display: none; max-width: 720px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.exercise-panel.visible { display: block; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-header {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: flex-start;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-number {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 4px 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 6px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 4px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-info { flex: 1; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-title-main {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 800;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>letter-spacing: -0.3px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 6px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-badge {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: inline-flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 5px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 11px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 600;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 3px 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-badge.easy { background: rgba(78,205,196,0.15); color: var(--easy); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-badge.medium { background: rgba(245,166,35,0.15); color: var(--med); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.diff-badge.hard { background: rgba(245,90,90,0.15); color: var(--hard); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-description {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.7;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-bottom: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.ex-description code {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 1px 5px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 4px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--accent3);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.code-area {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: var(--radius);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>resize: vertical;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>min-height: 120px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outline: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: border-color 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.7;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.code-area:focus { border-color: var(--accent); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.action-row {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 9px 18px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'Syne', sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 13px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-weight: 700;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: all 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-run { background: var(--accent); color: #fff; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-run:hover { opacity: 0.85; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-hint { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-hint:hover { color: var(--text); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.hint-box {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: rgba(124,110,245,0.08);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px solid rgba(124,110,245,0.3);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 12px 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.7;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>white-space: pre-wrap;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: none;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.output-box {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: var(--surface);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding: 12px 14px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-family: 'JetBrains Mono', monospace;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>min-height: 40px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>white-space: pre-wrap;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: var(--text2);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>line-height: 1.7;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.output-box.success { border-color: var(--easy); color: var(--easy); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.output-box.error { border-color: var(--hard); color: var(--hard); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.nav-row {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>gap: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin-top: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>padding-top: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-top: 1px solid var(--border);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-nav { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.btn-nav:hover { color: var(--text); }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.congrats { display: none; text-align: center; padding: 60px 20px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.congrats.visible { display: block; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.congrats-icon { font-size: 56px; margin-bottom: 16px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.congrats-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.congrats-sub { font-size: 14px; color: var(--text2); }</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div class="header"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="header-top"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="logo"&gt;py&lt;span&gt;DS&lt;/span&gt; track&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="progress-bar-wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span id="progress-text"&gt;0 / 0 solved&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="progress-bar"&gt;&lt;div class="progress-fill" id="progress-fill" style="width:0%"&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="topic-tabs" id="topic-tabs"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div class="main"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="sidebar" id="sidebar"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="content" id="content"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cheatsheet visible" id="cheatsheet"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="exercise-panel" id="exercise-panel"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="congrats" id="congrats"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="congrats-icon"&gt;🎉&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="congrats-title"&gt;Topic Complete!&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="congrats-sub"&gt;Move to the next topic from the tabs above.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">const curriculum = [</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "loops", label: "Loops", icon: "🔁",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Loops let you repeat code. Python has two: &lt;b&gt;for&lt;/b&gt; (iterate over a sequence) and &lt;b&gt;while&lt;/b&gt; (repeat while a condition is true).",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "for loop + range()", code: `&lt;span class="kw"&gt;for&lt;/span&gt; i &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;5&lt;/span&gt;):<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# 0,1,2,3,4&lt;/span&gt;\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(i)\n\n&lt;span class="kw"&gt;for&lt;/span&gt; i &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;1&lt;/span&gt;, &lt;span class="nm"&gt;6&lt;/span&gt;): <span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# 1,2,3,4,5&lt;/span&gt;\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(i)\n\n&lt;span class="kw"&gt;for&lt;/span&gt; i &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;0&lt;/span&gt;, &lt;span class="nm"&gt;10&lt;/span&gt;, &lt;span class="nm"&gt;2&lt;/span&gt;):<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 0,2,4,6,8&lt;/span&gt;\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(i)` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "for loop over list / string", code: `&lt;span class="kw"&gt;for&lt;/span&gt; fruit &lt;span class="kw"&gt;in&lt;/span&gt; [&lt;span class="st"&gt;"apple"&lt;/span&gt;, &lt;span class="st"&gt;"banana"&lt;/span&gt;]:\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(fruit)\n\n&lt;span class="kw"&gt;for&lt;/span&gt; ch &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="st"&gt;"hello"&lt;/span&gt;:\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(ch)` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "while loop", code: `count = &lt;span class="nm"&gt;0&lt;/span&gt;\n&lt;span class="kw"&gt;while&lt;/span&gt; count &amp;lt; &lt;span class="nm"&gt;5&lt;/span&gt;:\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(count)\n<span class="Apple-converted-space">    </span>count += &lt;span class="nm"&gt;1&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "break &amp; continue", code: `&lt;span class="kw"&gt;for&lt;/span&gt; i &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;10&lt;/span&gt;):\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;if&lt;/span&gt; i == &lt;span class="nm"&gt;5&lt;/span&gt;: &lt;span class="kw"&gt;break&lt;/span&gt;<span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# stop loop&lt;/span&gt;\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;if&lt;/span&gt; i % &lt;span class="nm"&gt;2&lt;/span&gt; == &lt;span class="nm"&gt;0&lt;/span&gt;: &lt;span class="kw"&gt;continue&lt;/span&gt;<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# skip even&lt;/span&gt;\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(i)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# prints 1 3&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count to 10", diff: "easy", desc: "Print numbers 1 through 10 using a &lt;code&gt;for&lt;/code&gt; loop.", hint: "for i in range(1, 11):\n<span class="Apple-converted-space">    </span>print(i)", check: o =&gt; o.trim() === [1,2,3,4,5,6,7,8,9,10].join('\n') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Sum of a list", diff: "easy", desc: "Find the sum of &lt;code&gt;nums = [4, 7, 2, 9, 1]&lt;/code&gt; using a loop. Print the total.", hint: "total = 0\nfor n in nums:\n<span class="Apple-converted-space">    </span>total += n\nprint(total)", check: o =&gt; o.includes('23') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "While countdown", diff: "easy", desc: "Use a &lt;code&gt;while&lt;/code&gt; loop to count down from 5 to 1, then print &lt;code&gt;Blast off!&lt;/code&gt;.", hint: "n = 5\nwhile n &gt;= 1:\n<span class="Apple-converted-space">    </span>print(n)\n<span class="Apple-converted-space">    </span>n -= 1\nprint('Blast off!')", check: o =&gt; o.includes('5') &amp;&amp; o.includes('1') &amp;&amp; o.toLowerCase().includes('blast off') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Reverse range", diff: "easy", desc: "Print numbers 10 down to 1 using &lt;code&gt;range()&lt;/code&gt; with a step.", hint: "range(10, 0, -1)", check: o =&gt; o.trim().startsWith('10') &amp;&amp; o.trim().endsWith('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Skip the evens", diff: "easy", desc: "Loop 1–20, print only odd numbers using &lt;code&gt;continue&lt;/code&gt;.", hint: "if i % 2 == 0:\n<span class="Apple-converted-space">    </span>continue", check: o =&gt; { const ns = o.trim().split('\n').map(Number); return ns.length === 10 &amp;&amp; ns.every(n =&gt; n % 2 !== 0); } },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "First multiple of 7", diff: "medium", desc: "Loop 1–100. Print the first number divisible by 7, then stop using &lt;code&gt;break&lt;/code&gt;.", hint: "if i % 7 == 0:\n<span class="Apple-converted-space">    </span>print(i)\n<span class="Apple-converted-space">    </span>break", check: o =&gt; o.trim() === '7' },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "FizzBuzz", diff: "medium", desc: "Loop 1–20. Print &lt;code&gt;Fizz&lt;/code&gt; for multiples of 3, &lt;code&gt;Buzz&lt;/code&gt; for multiples of 5, &lt;code&gt;FizzBuzz&lt;/code&gt; for both, else the number.", hint: "Check % 15 first, then % 3, then % 5", check: o =&gt; o.includes('FizzBuzz') &amp;&amp; o.includes('Fizz') &amp;&amp; o.includes('Buzz') &amp;&amp; o.includes('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Multiplication table", diff: "medium", desc: "Use nested loops to print a 5×5 multiplication table.", hint: "for i in range(1, 6):\n<span class="Apple-converted-space">    </span>for j in range(1, 6):\n<span class="Apple-converted-space">        </span>print(i*j, end=' ')\n<span class="Apple-converted-space">    </span>print()", check: o =&gt; o.includes('25') &amp;&amp; o.includes('1') &amp;&amp; o.includes('4') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count vowels", diff: "medium", desc: "Loop through the string &lt;code&gt;'hello world'&lt;/code&gt; and count how many vowels it has. Print the count.", hint: "vowels = 'aeiou'\ncount = 0\nfor ch in text:\n<span class="Apple-converted-space">    </span>if ch in vowels:\n<span class="Apple-converted-space">        </span>count += 1", check: o =&gt; o.trim().includes('3') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Sum of squares", diff: "medium", desc: "Print the sum of squares of numbers 1–10 (1²+2²+...+10²).", hint: "total += i**2", check: o =&gt; o.trim().includes('385') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Number guessing loop", diff: "hard", desc: "Set &lt;code&gt;secret = 7&lt;/code&gt;. Loop through 1–20 and print &lt;code&gt;Too low&lt;/code&gt;, &lt;code&gt;Found it!&lt;/code&gt;, or &lt;code&gt;Too high&lt;/code&gt; for each number. Stop when found.", hint: "if i &lt; secret: print('Too low')\nelif i == secret: print('Found it!'); break\nelse: print('Too high'); break", check: o =&gt; o.includes('Found it') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Fibonacci sequence", diff: "hard", desc: "Print the first 10 Fibonacci numbers (0, 1, 1, 2, 3, 5, 8, 13, 21, 34) using a loop.", hint: "a, b = 0, 1\nfor _ in range(10):\n<span class="Apple-converted-space">    </span>print(a)\n<span class="Apple-converted-space">    </span>a, b = b, a+b", check: o =&gt; o.includes('0') &amp;&amp; o.includes('34') &amp;&amp; o.trim().split('\n').length === 10 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Prime checker", diff: "hard", desc: "Print all prime numbers between 2 and 30 using nested loops.", hint: "for n in range(2, 31):\n<span class="Apple-converted-space">    </span>is_prime = True\n<span class="Apple-converted-space">    </span>for i in range(2, n):\n<span class="Apple-converted-space">        </span>if n % i == 0:\n<span class="Apple-converted-space">            </span>is_prime = False; break\n<span class="Apple-converted-space">    </span>if is_prime: print(n)", check: o =&gt; o.includes('2') &amp;&amp; o.includes('29') &amp;&amp; o.includes('17') },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "functions", label: "Functions", icon: "⚙️",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Functions let you wrap reusable logic. Use &lt;b&gt;def&lt;/b&gt; to define, &lt;b&gt;return&lt;/b&gt; to send back a value.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Basic function", code: `&lt;span class="kw"&gt;def&lt;/span&gt; &lt;span class="fn"&gt;greet&lt;/span&gt;(name):\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;return&lt;/span&gt; &lt;span class="st"&gt;"Hello, "&lt;/span&gt; + name\n\n&lt;span class="fn"&gt;print&lt;/span&gt;(&lt;span class="fn"&gt;greet&lt;/span&gt;(&lt;span class="st"&gt;"Kushagr"&lt;/span&gt;))<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# Hello, Kushagr&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Default arguments", code: `&lt;span class="kw"&gt;def&lt;/span&gt; &lt;span class="fn"&gt;power&lt;/span&gt;(base, exp=&lt;span class="nm"&gt;2&lt;/span&gt;):\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;return&lt;/span&gt; base ** exp\n\n&lt;span class="fn"&gt;power&lt;/span&gt;(&lt;span class="nm"&gt;3&lt;/span&gt;)<span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# 9&lt;/span&gt;\n&lt;span class="fn"&gt;power&lt;/span&gt;(&lt;span class="nm"&gt;3&lt;/span&gt;, &lt;span class="nm"&gt;3&lt;/span&gt;)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 27&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Multiple return values", code: `&lt;span class="kw"&gt;def&lt;/span&gt; &lt;span class="fn"&gt;min_max&lt;/span&gt;(lst):\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;return&lt;/span&gt; &lt;span class="fn"&gt;min&lt;/span&gt;(lst), &lt;span class="fn"&gt;max&lt;/span&gt;(lst)\n\nlo, hi = &lt;span class="fn"&gt;min_max&lt;/span&gt;([&lt;span class="nm"&gt;3&lt;/span&gt;, &lt;span class="nm"&gt;1&lt;/span&gt;, &lt;span class="nm"&gt;9&lt;/span&gt;, &lt;span class="nm"&gt;4&lt;/span&gt;])\n&lt;span class="fn"&gt;print&lt;/span&gt;(lo, hi)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 1 9&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "*args and lambda", code: `&lt;span class="kw"&gt;def&lt;/span&gt; &lt;span class="fn"&gt;total&lt;/span&gt;(*nums):\n<span class="Apple-converted-space">    </span>&lt;span class="kw"&gt;return&lt;/span&gt; &lt;span class="fn"&gt;sum&lt;/span&gt;(nums)\n\n&lt;span class="fn"&gt;total&lt;/span&gt;(&lt;span class="nm"&gt;1&lt;/span&gt;, &lt;span class="nm"&gt;2&lt;/span&gt;, &lt;span class="nm"&gt;3&lt;/span&gt;)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 6&lt;/span&gt;\n\ndouble = &lt;span class="kw"&gt;lambda&lt;/span&gt; x: x * &lt;span class="nm"&gt;2&lt;/span&gt;\n&lt;span class="fn"&gt;double&lt;/span&gt;(&lt;span class="nm"&gt;5&lt;/span&gt;)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 10&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Hello function", diff: "easy", desc: "Write a function &lt;code&gt;greet(name)&lt;/code&gt; that returns &lt;code&gt;Hello, [name]!&lt;/code&gt;. Call it with your name and print the result.", hint: "def greet(name):\n<span class="Apple-converted-space">    </span>return 'Hello, ' + name + '!'", check: o =&gt; o.toLowerCase().includes('hello') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Square a number", diff: "easy", desc: "Write a function &lt;code&gt;square(n)&lt;/code&gt; that returns n². Print &lt;code&gt;square(7)&lt;/code&gt;.", hint: "return n ** 2", check: o =&gt; o.trim().includes('49') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Is even?", diff: "easy", desc: "Write &lt;code&gt;is_even(n)&lt;/code&gt; that returns &lt;code&gt;True&lt;/code&gt; if n is even, else &lt;code&gt;False&lt;/code&gt;. Test with 4 and 7.", hint: "return n % 2 == 0", check: o =&gt; o.includes('True') &amp;&amp; o.includes('False') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Min of two", diff: "easy", desc: "Write &lt;code&gt;my_min(a, b)&lt;/code&gt; that returns the smaller of two numbers without using &lt;code&gt;min()&lt;/code&gt;.", hint: "if a &lt; b:\n<span class="Apple-converted-space">    </span>return a\nreturn b", check: o =&gt; { const lines = o.trim().split('\n'); return lines.some(l =&gt; l.trim().length &gt; 0); } },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Celsius to Fahrenheit", diff: "easy", desc: "Write &lt;code&gt;to_fahrenheit(c)&lt;/code&gt; that converts Celsius to Fahrenheit. Formula: &lt;code&gt;F = C * 9/5 + 32&lt;/code&gt;. Print result for 0°C and 100°C.", hint: "return c * 9/5 + 32", check: o =&gt; o.includes('32') &amp;&amp; o.includes('212') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Default argument", diff: "medium", desc: "Write &lt;code&gt;power(base, exp=2)&lt;/code&gt; that returns base^exp. Call it as &lt;code&gt;power(3)&lt;/code&gt; and &lt;code&gt;power(2, 10)&lt;/code&gt;.", hint: "def power(base, exp=2):\n<span class="Apple-converted-space">    </span>return base ** exp", check: o =&gt; o.includes('9') &amp;&amp; o.includes('1024') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Sum with *args", diff: "medium", desc: "Write &lt;code&gt;total(*nums)&lt;/code&gt; that returns the sum of any number of arguments. Test with &lt;code&gt;total(1,2,3)&lt;/code&gt; and &lt;code&gt;total(10,20,30,40)&lt;/code&gt;.", hint: "def total(*nums):\n<span class="Apple-converted-space">    </span>return sum(nums)", check: o =&gt; o.includes('6') &amp;&amp; o.includes('100') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count occurrences", diff: "medium", desc: "Write &lt;code&gt;count_char(text, char)&lt;/code&gt; that counts how many times &lt;code&gt;char&lt;/code&gt; appears in &lt;code&gt;text&lt;/code&gt;. Test: &lt;code&gt;count_char('banana', 'a')&lt;/code&gt;.", hint: "count = 0\nfor c in text:\n<span class="Apple-converted-space">    </span>if c == char:\n<span class="Apple-converted-space">        </span>count += 1\nreturn count", check: o =&gt; o.trim().includes('3') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Return min and max", diff: "medium", desc: "Write &lt;code&gt;stats(lst)&lt;/code&gt; that returns both the minimum and maximum of a list as a tuple. Test with &lt;code&gt;[3, 1, 9, 4, 7]&lt;/code&gt;.", hint: "return min(lst), max(lst)", check: o =&gt; o.includes('1') &amp;&amp; o.includes('9') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Palindrome check", diff: "medium", desc: "Write &lt;code&gt;is_palindrome(word)&lt;/code&gt; that returns &lt;code&gt;True&lt;/code&gt; if the word reads the same forwards and backwards. Test: &lt;code&gt;'racecar'&lt;/code&gt; and &lt;code&gt;'hello'&lt;/code&gt;.", hint: "return word == word[::-1]", check: o =&gt; o.includes('True') &amp;&amp; o.includes('False') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Factorial", diff: "hard", desc: "Write &lt;code&gt;factorial(n)&lt;/code&gt; that returns n! using a loop. Print &lt;code&gt;factorial(5)&lt;/code&gt; and &lt;code&gt;factorial(10)&lt;/code&gt;.", hint: "result = 1\nfor i in range(1, n+1):\n<span class="Apple-converted-space">    </span>result *= i\nreturn result", check: o =&gt; o.includes('120') &amp;&amp; o.includes('3628800') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Lambda sort", diff: "hard", desc: "Given &lt;code&gt;words = ['banana','kiwi','apple','fig']&lt;/code&gt;, sort them by length using a &lt;code&gt;lambda&lt;/code&gt; and print.", hint: "sorted(words, key=lambda w: len(w))", check: o =&gt; { const idx_fig = o.indexOf('fig'); const idx_banana = o.indexOf('banana'); return idx_fig &lt; idx_banana; } },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Recursive sum", diff: "hard", desc: "Write a recursive function &lt;code&gt;rsum(lst)&lt;/code&gt; that sums a list without using &lt;code&gt;sum()&lt;/code&gt;. Test: &lt;code&gt;rsum([1,2,3,4,5])&lt;/code&gt;.", hint: "if not lst:\n<span class="Apple-converted-space">    </span>return 0\nreturn lst[0] + rsum(lst[1:])", check: o =&gt; o.trim().includes('15') },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "datastructs", label: "Data Structures", icon: "📦",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Lists, dictionaries, sets and tuples are the core containers in Python. Master these and data manipulation becomes natural.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Lists", code: `lst = [&lt;span class="nm"&gt;1&lt;/span&gt;, &lt;span class="nm"&gt;2&lt;/span&gt;, &lt;span class="nm"&gt;3&lt;/span&gt;]\nlst.&lt;span class="fn"&gt;append&lt;/span&gt;(&lt;span class="nm"&gt;4&lt;/span&gt;)<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# [1,2,3,4]&lt;/span&gt;\nlst.&lt;span class="fn"&gt;remove&lt;/span&gt;(&lt;span class="nm"&gt;2&lt;/span&gt;)<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# [1,3,4]&lt;/span&gt;\nlst[&lt;span class="nm"&gt;0&lt;/span&gt;] <span class="Apple-converted-space">            </span>&lt;span class="cm"&gt;# 1&lt;/span&gt;\nlst[&lt;span class="nm"&gt;1&lt;/span&gt;:&lt;span class="nm"&gt;3&lt;/span&gt;] <span class="Apple-converted-space">          </span>&lt;span class="cm"&gt;# [3,4]&lt;/span&gt;\n&lt;span class="fn"&gt;len&lt;/span&gt;(lst) <span class="Apple-converted-space">          </span>&lt;span class="cm"&gt;# 3&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Dictionaries", code: `d = {&lt;span class="st"&gt;"name"&lt;/span&gt;: &lt;span class="st"&gt;"Kushagr"&lt;/span&gt;, &lt;span class="st"&gt;"age"&lt;/span&gt;: &lt;span class="nm"&gt;25&lt;/span&gt;}\nd[&lt;span class="st"&gt;"name"&lt;/span&gt;]<span class="Apple-converted-space">          </span>&lt;span class="cm"&gt;# "Kushagr"&lt;/span&gt;\nd[&lt;span class="st"&gt;"city"&lt;/span&gt;] = &lt;span class="st"&gt;"Hamburg"&lt;/span&gt;\nd.&lt;span class="fn"&gt;keys&lt;/span&gt;()<span class="Apple-converted-space">  </span>d.&lt;span class="fn"&gt;values&lt;/span&gt;()<span class="Apple-converted-space">  </span>d.&lt;span class="fn"&gt;items&lt;/span&gt;()` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Sets &amp; Tuples", code: `s = {&lt;span class="nm"&gt;1&lt;/span&gt;, &lt;span class="nm"&gt;2&lt;/span&gt;, &lt;span class="nm"&gt;3&lt;/span&gt;, &lt;span class="nm"&gt;2&lt;/span&gt;}<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# {1,2,3} no dups&lt;/span&gt;\ns.&lt;span class="fn"&gt;add&lt;/span&gt;(&lt;span class="nm"&gt;4&lt;/span&gt;)\n\nt = (&lt;span class="nm"&gt;10&lt;/span&gt;, &lt;span class="nm"&gt;20&lt;/span&gt;, &lt;span class="nm"&gt;30&lt;/span&gt;) <span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# immutable&lt;/span&gt;\nt[&lt;span class="nm"&gt;0&lt;/span&gt;] <span class="Apple-converted-space">              </span>&lt;span class="cm"&gt;# 10&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "List comprehension", code: `squares = [x**&lt;span class="nm"&gt;2&lt;/span&gt; &lt;span class="kw"&gt;for&lt;/span&gt; x &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;5&lt;/span&gt;)]\n&lt;span class="cm"&gt;# [0, 1, 4, 9, 16]&lt;/span&gt;\n\nevens = [x &lt;span class="kw"&gt;for&lt;/span&gt; x &lt;span class="kw"&gt;in&lt;/span&gt; &lt;span class="fn"&gt;range&lt;/span&gt;(&lt;span class="nm"&gt;10&lt;/span&gt;) &lt;span class="kw"&gt;if&lt;/span&gt; x%&lt;span class="nm"&gt;2&lt;/span&gt;==&lt;span class="nm"&gt;0&lt;/span&gt;]` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "List basics", diff: "easy", desc: "Create a list of 5 fruits. Print the first and last item.", hint: "fruits[0] and fruits[-1]", check: o =&gt; o.trim().split('\n').length &gt;= 2 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Append and remove", diff: "easy", desc: "Start with &lt;code&gt;nums = [1,2,3,4,5]&lt;/code&gt;. Append 6, remove 3, then print the list.", hint: "nums.append(6)\nnums.remove(3)", check: o =&gt; o.includes('6') &amp;&amp; !o.includes(' 3,') &amp;&amp; !o.includes('[3,') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Slicing", diff: "easy", desc: "Given &lt;code&gt;letters = ['a','b','c','d','e','f']&lt;/code&gt;, print the first 3 and the last 2.", hint: "letters[:3] and letters[-2:]", check: o =&gt; o.includes('a') &amp;&amp; o.includes('f') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Dict lookup", diff: "easy", desc: "Create a dict with keys &lt;code&gt;name&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt;, &lt;code&gt;city&lt;/code&gt;. Print all three values.", hint: "d = {'name': '...', 'age': ..., 'city': '...'}", check: o =&gt; o.trim().split('\n').length &gt;= 3 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count with dict", diff: "medium", desc: "Count how many times each letter appears in &lt;code&gt;'mississippi'&lt;/code&gt;. Store in a dict and print it.", hint: "counts = {}\nfor ch in word:\n<span class="Apple-converted-space">    </span>counts[ch] = counts.get(ch, 0) + 1", check: o =&gt; o.includes('4') &amp;&amp; o.includes('s') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "List comprehension squares", diff: "medium", desc: "Use a list comprehension to create a list of squares of 1–10. Print it.", hint: "[x**2 for x in range(1, 11)]", check: o =&gt; o.includes('100') &amp;&amp; o.includes('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Filter with comprehension", diff: "medium", desc: "From &lt;code&gt;nums = [3,15,8,22,7,19,4,11]&lt;/code&gt;, use a list comprehension to get all numbers greater than 10.", hint: "[n for n in nums if n &gt; 10]", check: o =&gt; o.includes('15') &amp;&amp; o.includes('22') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Unique values", diff: "medium", desc: "Given &lt;code&gt;data = [1,2,2,3,4,4,4,5]&lt;/code&gt;, use a set to get unique values and print them sorted.", hint: "sorted(set(data))", check: o =&gt; o.includes('1') &amp;&amp; o.includes('5') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Dict from lists", diff: "medium", desc: "Given &lt;code&gt;keys = ['a','b','c']&lt;/code&gt; and &lt;code&gt;vals = [1,2,3]&lt;/code&gt;, create a dict using &lt;code&gt;zip()&lt;/code&gt;. Print it.", hint: "dict(zip(keys, vals))", check: o =&gt; o.includes('a') &amp;&amp; o.includes('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Nested dict", diff: "hard", desc: "Create a dict of 3 students with scores: &lt;code&gt;{'Alice': 85, 'Bob': 92, 'Clara': 78}&lt;/code&gt;. Print the name of the highest scorer.", hint: "max(scores, key=lambda k: scores[k])", check: o =&gt; o.toLowerCase().includes('bob') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Flatten a list", diff: "hard", desc: "Flatten &lt;code&gt;nested = [[1,2],[3,4],[5,6]]&lt;/code&gt; into a single list using a list comprehension.", hint: "[x for sub in nested for x in sub]", check: o =&gt; o.includes('1') &amp;&amp; o.includes('6') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Word frequency", diff: "hard", desc: "Given &lt;code&gt;text = 'the cat sat on the mat the cat'&lt;/code&gt;, count word frequency and print the most common word.", hint: "counts = {}\nfor w in text.split():\n<span class="Apple-converted-space">    </span>counts[w] = counts.get(w, 0) + 1\nprint(max(counts, key=counts.get))", check: o =&gt; o.toLowerCase().includes('the') },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "strings", label: "Strings", icon: "🔤",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Strings are everywhere in data science — cleaning, parsing, and transforming text is a daily task.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Common string methods", code: `s = &lt;span class="st"&gt;"<span class="Apple-converted-space">  </span>Hello World<span class="Apple-converted-space">  </span>"&lt;/span&gt;\ns.&lt;span class="fn"&gt;strip&lt;/span&gt;()<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# "Hello World"&lt;/span&gt;\ns.&lt;span class="fn"&gt;lower&lt;/span&gt;()<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# "<span class="Apple-converted-space">  </span>hello world<span class="Apple-converted-space">  </span>"&lt;/span&gt;\ns.&lt;span class="fn"&gt;upper&lt;/span&gt;()<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# "<span class="Apple-converted-space">  </span>HELLO WORLD<span class="Apple-converted-space">  </span>"&lt;/span&gt;\ns.&lt;span class="fn"&gt;replace&lt;/span&gt;(&lt;span class="st"&gt;"Hello"&lt;/span&gt;, &lt;span class="st"&gt;"Hi"&lt;/span&gt;)\ns.&lt;span class="fn"&gt;split&lt;/span&gt;()<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# ["Hello", "World"]&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Slicing &amp; indexing", code: `s = &lt;span class="st"&gt;"Python"&lt;/span&gt;\ns[&lt;span class="nm"&gt;0&lt;/span&gt;]<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# 'P'&lt;/span&gt;\ns[-&lt;span class="nm"&gt;1&lt;/span&gt;] <span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# 'n'&lt;/span&gt;\ns[&lt;span class="nm"&gt;1&lt;/span&gt;:&lt;span class="nm"&gt;4&lt;/span&gt;]<span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# 'yth'&lt;/span&gt;\ns[::&lt;span class="nm"&gt;-1&lt;/span&gt;] <span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# 'nohtyP'&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "f-strings", code: `name = &lt;span class="st"&gt;"Kushagr"&lt;/span&gt;; age = &lt;span class="nm"&gt;25&lt;/span&gt;\n&lt;span class="fn"&gt;print&lt;/span&gt;(&lt;span class="st"&gt;f"My name is {name}, age {age}"&lt;/span&gt;)\n&lt;span class="fn"&gt;print&lt;/span&gt;(&lt;span class="st"&gt;f"Pi ≈ {3.14159:.2f}"&lt;/span&gt;)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# Pi ≈ 3.14&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "in, find, startswith", code: `s = &lt;span class="st"&gt;"data science"&lt;/span&gt;\n&lt;span class="st"&gt;"data"&lt;/span&gt; &lt;span class="kw"&gt;in&lt;/span&gt; s<span class="Apple-converted-space">          </span>&lt;span class="cm"&gt;# True&lt;/span&gt;\ns.&lt;span class="fn"&gt;find&lt;/span&gt;(&lt;span class="st"&gt;"sci"&lt;/span&gt;) <span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# 5&lt;/span&gt;\ns.&lt;span class="fn"&gt;startswith&lt;/span&gt;(&lt;span class="st"&gt;"data"&lt;/span&gt;) &lt;span class="cm"&gt;# True&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Reverse a string", diff: "easy", desc: "Reverse the string &lt;code&gt;'Python'&lt;/code&gt; using slicing and print it.", hint: "s[::-1]", check: o =&gt; o.includes('nohtyP') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Uppercase &amp; lowercase", diff: "easy", desc: "Take &lt;code&gt;'Hello World'&lt;/code&gt; and print it in all uppercase and all lowercase.", hint: ".upper() and .lower()", check: o =&gt; o.includes('HELLO WORLD') &amp;&amp; o.includes('hello world') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Strip whitespace", diff: "easy", desc: "Clean up &lt;code&gt;' <span class="Apple-converted-space">  </span>data science <span class="Apple-converted-space">  </span>'&lt;/code&gt; and print without extra spaces.", hint: ".strip()", check: o =&gt; o.includes('data science') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count words", diff: "easy", desc: "Count the number of words in &lt;code&gt;'the quick brown fox'&lt;/code&gt; using &lt;code&gt;split()&lt;/code&gt;.", hint: "len(s.split())", check: o =&gt; o.trim().includes('4') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "f-string formatting", diff: "easy", desc: "Create variables for your name and age, then print: &lt;code&gt;My name is X and I am Y years old.&lt;/code&gt;", hint: "f'My name is {name} and I am {age} years old.'", check: o =&gt; o.toLowerCase().includes('my name is') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Replace", diff: "medium", desc: "In &lt;code&gt;'I love cats and cats love me'&lt;/code&gt;, replace all &lt;code&gt;'cats'&lt;/code&gt; with &lt;code&gt;'dogs'&lt;/code&gt; and print.", hint: ".replace('cats', 'dogs')", check: o =&gt; o.includes('dogs') &amp;&amp; !o.includes('cats') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Check palindrome", diff: "medium", desc: "Check if &lt;code&gt;'racecar'&lt;/code&gt; is a palindrome using only string operations. Print &lt;code&gt;True&lt;/code&gt; or &lt;code&gt;False&lt;/code&gt;.", hint: "s == s[::-1]", check: o =&gt; o.trim().includes('True') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Title case", diff: "medium", desc: "Convert &lt;code&gt;'machine learning is fun'&lt;/code&gt; to title case and print.", hint: ".title()", check: o =&gt; o.includes('Machine Learning Is Fun') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "CSV split", diff: "medium", desc: "Given &lt;code&gt;row = 'Alice,29,Berlin,Engineer'&lt;/code&gt;, split by comma and print each field on its own line.", hint: "row.split(',')", check: o =&gt; o.includes('Alice') &amp;&amp; o.includes('29') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count character frequency", diff: "medium", desc: "Count how many times the letter &lt;code&gt;'s'&lt;/code&gt; appears in &lt;code&gt;'mississippi'&lt;/code&gt;.", hint: "s.count('s')", check: o =&gt; o.trim().includes('4') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Extract domain from email", diff: "hard", desc: "Given &lt;code&gt;email = 'kushagr@gmail.com'&lt;/code&gt;, extract and print only the domain part (&lt;code&gt;gmail.com&lt;/code&gt;).", hint: "email.split('@')[1]", check: o =&gt; o.includes('gmail.com') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Truncate and ellipsis", diff: "hard", desc: "Write code that truncates any string longer than 20 chars and adds &lt;code&gt;...&lt;/code&gt;. Test with &lt;code&gt;'Data science is an exciting field'&lt;/code&gt;.", hint: "if len(s) &gt; 20:\n<span class="Apple-converted-space">    </span>s = s[:20] + '...'", check: o =&gt; o.includes('...') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Clean and split", diff: "hard", desc: "Given &lt;code&gt;raw = '<span class="Apple-converted-space">  </span>apple , banana , kiwi , mango<span class="Apple-converted-space">  </span>'&lt;/code&gt;, produce a clean list with no spaces.", hint: "[x.strip() for x in raw.split(',')]", check: o =&gt; o.includes('apple') &amp;&amp; o.includes('mango') },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "fileio", label: "Files &amp; Errors", icon: "📁",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Reading data files and handling errors gracefully are must-have skills for any data pipeline.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Reading &amp; writing files", code: `&lt;span class="kw"&gt;with&lt;/span&gt; &lt;span class="fn"&gt;open&lt;/span&gt;(&lt;span class="st"&gt;"file.txt"&lt;/span&gt;, &lt;span class="st"&gt;"w"&lt;/span&gt;) &lt;span class="kw"&gt;as&lt;/span&gt; f:\n<span class="Apple-converted-space">    </span>f.&lt;span class="fn"&gt;write&lt;/span&gt;(&lt;span class="st"&gt;"Hello\\n"&lt;/span&gt;)\n\n&lt;span class="kw"&gt;with&lt;/span&gt; &lt;span class="fn"&gt;open&lt;/span&gt;(&lt;span class="st"&gt;"file.txt"&lt;/span&gt;, &lt;span class="st"&gt;"r"&lt;/span&gt;) &lt;span class="kw"&gt;as&lt;/span&gt; f:\n<span class="Apple-converted-space">    </span>content = f.&lt;span class="fn"&gt;read&lt;/span&gt;()` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "try / except / finally", code: `&lt;span class="kw"&gt;try&lt;/span&gt;:\n<span class="Apple-converted-space">    </span>result = &lt;span class="nm"&gt;10&lt;/span&gt; / &lt;span class="nm"&gt;0&lt;/span&gt;\n&lt;span class="kw"&gt;except&lt;/span&gt; ZeroDivisionError:\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(&lt;span class="st"&gt;"Can't divide by zero!"&lt;/span&gt;)\n&lt;span class="kw"&gt;finally&lt;/span&gt;:\n<span class="Apple-converted-space">    </span>&lt;span class="fn"&gt;print&lt;/span&gt;(&lt;span class="st"&gt;"Done"&lt;/span&gt;)` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Common exceptions", code: `ValueError<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# bad value: int("abc")&lt;/span&gt;\nTypeError <span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# wrong type: "a" + 1&lt;/span&gt;\nKeyError<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# missing dict key&lt;/span&gt;\nIndexError<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# list index out of range&lt;/span&gt;\nZeroDivisionError` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Safe division", diff: "easy", desc: "Write code that divides 10 by 0 inside a &lt;code&gt;try&lt;/code&gt; block and prints &lt;code&gt;Cannot divide by zero&lt;/code&gt; in the &lt;code&gt;except&lt;/code&gt;.", hint: "try:\n<span class="Apple-converted-space">    </span>result = 10 / 0\nexcept ZeroDivisionError:\n<span class="Apple-converted-space">    </span>print('Cannot divide by zero')", check: o =&gt; o.toLowerCase().includes('zero') || o.toLowerCase().includes('divide') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Safe int conversion", diff: "easy", desc: "Try to convert &lt;code&gt;'hello'&lt;/code&gt; to an integer. Catch the &lt;code&gt;ValueError&lt;/code&gt; and print &lt;code&gt;Not a number&lt;/code&gt;.", hint: "try:\n<span class="Apple-converted-space">    </span>int('hello')\nexcept ValueError:\n<span class="Apple-converted-space">    </span>print('Not a number')", check: o =&gt; o.toLowerCase().includes('not a number') || o.toLowerCase().includes('number') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "KeyError handling", diff: "easy", desc: "Given &lt;code&gt;d = {'a': 1, 'b': 2}&lt;/code&gt;, try to access key &lt;code&gt;'z'&lt;/code&gt; and handle the &lt;code&gt;KeyError&lt;/code&gt; gracefully.", hint: "except KeyError:\n<span class="Apple-converted-space">    </span>print('Key not found')", check: o =&gt; o.toLowerCase().includes('key') || o.toLowerCase().includes('found') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Index error", diff: "easy", desc: "Create a list of 3 items and try to access index 10. Catch the &lt;code&gt;IndexError&lt;/code&gt;.", hint: "except IndexError:\n<span class="Apple-converted-space">    </span>print('Index out of range')", check: o =&gt; o.toLowerCase().includes('index') || o.toLowerCase().includes('range') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Finally block", diff: "medium", desc: "Write a &lt;code&gt;try/except/finally&lt;/code&gt; block. In finally, always print &lt;code&gt;Cleanup done&lt;/code&gt;.", hint: "finally:\n<span class="Apple-converted-space">    </span>print('Cleanup done')", check: o =&gt; o.toLowerCase().includes('cleanup done') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Multiple except", diff: "medium", desc: "Write one &lt;code&gt;try&lt;/code&gt; block that handles both &lt;code&gt;ValueError&lt;/code&gt; and &lt;code&gt;ZeroDivisionError&lt;/code&gt; with different messages.", hint: "except ValueError:\n<span class="Apple-converted-space">    </span>print('Bad value')\nexcept ZeroDivisionError:\n<span class="Apple-converted-space">    </span>print('Zero division')", check: o =&gt; o.trim().split('\n').length &gt;= 1 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Write to file", diff: "medium", desc: "Write three lines to a file called &lt;code&gt;test.txt&lt;/code&gt;, then read it back and print the contents.", hint: "with open('test.txt', 'w') as f:\n<span class="Apple-converted-space">    </span>f.write('line1\\nline2\\nline3\\n')", check: o =&gt; o.includes('line') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Count lines in file", diff: "medium", desc: "Write 5 lines to a file, read it back and print how many lines it has.", hint: "lines = f.readlines()\nprint(len(lines))", check: o =&gt; o.trim().includes('5') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Raise your own error", diff: "hard", desc: "Write &lt;code&gt;check_age(age)&lt;/code&gt; that raises a &lt;code&gt;ValueError&lt;/code&gt; with message &lt;code&gt;Age must be positive&lt;/code&gt; if age &lt; 0. Test with &lt;code&gt;-5&lt;/code&gt;.", hint: "if age &lt; 0:\n<span class="Apple-converted-space">    </span>raise ValueError('Age must be positive')", check: o =&gt; o.toLowerCase().includes('positive') || o.toLowerCase().includes('age') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "CSV reader", diff: "hard", desc: "Write 3 rows of CSV data (name,score format) to a file, read it back line by line, and print each name and score separately.", hint: "for line in f:\n<span class="Apple-converted-space">    </span>parts = line.strip().split(',')\n<span class="Apple-converted-space">    </span>print(parts[0], parts[1])", check: o =&gt; o.trim().split('\n').length &gt;= 3 },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "numpy", label: "NumPy", icon: "🔢",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "NumPy is the backbone of numerical computing in Python. It gives you fast arrays and vectorized math — no loops needed.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Creating arrays", code: `&lt;span class="kw"&gt;import&lt;/span&gt; numpy &lt;span class="kw"&gt;as&lt;/span&gt; np\n\nnp.&lt;span class="fn"&gt;array&lt;/span&gt;([&lt;span class="nm"&gt;1&lt;/span&gt;,&lt;span class="nm"&gt;2&lt;/span&gt;,&lt;span class="nm"&gt;3&lt;/span&gt;])<span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# from list&lt;/span&gt;\nnp.&lt;span class="fn"&gt;zeros&lt;/span&gt;(&lt;span class="nm"&gt;5&lt;/span&gt;) <span class="Apple-converted-space">          </span>&lt;span class="cm"&gt;# [0. 0. 0. 0. 0.]&lt;/span&gt;\nnp.&lt;span class="fn"&gt;ones&lt;/span&gt;((&lt;span class="nm"&gt;2&lt;/span&gt;,&lt;span class="nm"&gt;3&lt;/span&gt;)) <span class="Apple-converted-space">        </span>&lt;span class="cm"&gt;# 2x3 of 1s&lt;/span&gt;\nnp.&lt;span class="fn"&gt;arange&lt;/span&gt;(&lt;span class="nm"&gt;0&lt;/span&gt;,&lt;span class="nm"&gt;10&lt;/span&gt;,&lt;span class="nm"&gt;2&lt;/span&gt;) <span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# [0 2 4 6 8]&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Array operations", code: `a = np.&lt;span class="fn"&gt;array&lt;/span&gt;([&lt;span class="nm"&gt;1&lt;/span&gt;,&lt;span class="nm"&gt;2&lt;/span&gt;,&lt;span class="nm"&gt;3&lt;/span&gt;])\na * &lt;span class="nm"&gt;2&lt;/span&gt;<span class="Apple-converted-space">      </span>&lt;span class="cm"&gt;# [2 4 6]&lt;/span&gt;\na + &lt;span class="nm"&gt;10&lt;/span&gt; <span class="Apple-converted-space">    </span>&lt;span class="cm"&gt;# [11 12 13]&lt;/span&gt;\na[a &amp;gt; &lt;span class="nm"&gt;1&lt;/span&gt;]<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# [2 3] boolean mask&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Stats &amp; shape", code: `a.&lt;span class="fn"&gt;mean&lt;/span&gt;()<span class="Apple-converted-space">  </span>a.&lt;span class="fn"&gt;sum&lt;/span&gt;()<span class="Apple-converted-space">  </span>a.&lt;span class="fn"&gt;std&lt;/span&gt;()\na.&lt;span class="fn"&gt;min&lt;/span&gt;() <span class="Apple-converted-space">  </span>a.&lt;span class="fn"&gt;max&lt;/span&gt;()<span class="Apple-converted-space">  </span>a.&lt;span class="fn"&gt;shape&lt;/span&gt;\na.&lt;span class="fn"&gt;reshape&lt;/span&gt;(&lt;span class="nm"&gt;3&lt;/span&gt;,&lt;span class="nm"&gt;4&lt;/span&gt;)<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# change shape&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Create array", diff: "easy", desc: "Import numpy and create an array from &lt;code&gt;[10, 20, 30, 40, 50]&lt;/code&gt;. Print it and its dtype.", hint: "import numpy as np\na = np.array([10,20,30,40,50])\nprint(a, a.dtype)", check: o =&gt; o.includes('10') &amp;&amp; o.includes('50') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Zeros and ones", diff: "easy", desc: "Create an array of 5 zeros and an array of 5 ones. Print both.", hint: "np.zeros(5)\nnp.ones(5)", check: o =&gt; o.includes('0') &amp;&amp; o.includes('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "arange", diff: "easy", desc: "Use &lt;code&gt;np.arange&lt;/code&gt; to create an array of even numbers from 0 to 18. Print it.", hint: "np.arange(0, 20, 2)", check: o =&gt; o.includes('0') &amp;&amp; o.includes('18') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Vectorized math", diff: "easy", desc: "Create &lt;code&gt;a = np.array([1,2,3,4,5])&lt;/code&gt;. Multiply every element by 3 and add 10. Print the result.", hint: "a * 3 + 10", check: o =&gt; o.includes('13') &amp;&amp; o.includes('25') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Array stats", diff: "medium", desc: "Create &lt;code&gt;a = np.array([4,7,2,9,1,6,3,8,5])&lt;/code&gt;. Print the mean, min, max, and std.", hint: "a.mean(), a.min(), a.max(), a.std()", check: o =&gt; o.includes('5') &amp;&amp; o.includes('9') &amp;&amp; o.includes('1') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Boolean masking", diff: "medium", desc: "From &lt;code&gt;a = np.array([3,15,8,22,7,19,4,11])&lt;/code&gt;, extract values greater than 10 using a boolean mask.", hint: "a[a &gt; 10]", check: o =&gt; o.includes('15') &amp;&amp; o.includes('22') &amp;&amp; o.includes('19') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "2D array", diff: "medium", desc: "Create a 3×3 array of ones and multiply the whole array by 5. Print the result.", hint: "np.ones((3,3)) * 5", check: o =&gt; o.includes('5') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Reshape", diff: "medium", desc: "Create &lt;code&gt;np.arange(12)&lt;/code&gt; and reshape it into a 3×4 matrix. Print the shape and the array.", hint: "a = np.arange(12).reshape(3,4)", check: o =&gt; o.includes('11') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Normalize array", diff: "hard", desc: "Normalize &lt;code&gt;a = np.array([10,20,30,40,50])&lt;/code&gt; to range 0–1 using &lt;code&gt;(a - a.min()) / (a.max() - a.min())&lt;/code&gt;.", hint: "(a - a.min()) / (a.max() - a.min())", check: o =&gt; o.includes('0.') &amp;&amp; o.includes('1.') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Matrix multiply", diff: "hard", desc: "Create two 2×2 matrices and multiply them using &lt;code&gt;np.dot()&lt;/code&gt; or &lt;code&gt;@&lt;/code&gt;. Print the result.", hint: "A @ B<span class="Apple-converted-space">  </span>or<span class="Apple-converted-space">  </span>np.dot(A, B)", check: o =&gt; o.trim().split('\n').length &gt;= 2 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Argmax &amp; argsort", diff: "hard", desc: "From &lt;code&gt;scores = np.array([72, 88, 61, 95, 79])&lt;/code&gt;, print the index of the highest score and the indices that sort the array.", hint: "np.argmax(scores)\nnp.argsort(scores)", check: o =&gt; o.includes('3') },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>id: "pandas", label: "Pandas", icon: "🐼",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>intro: "Pandas is THE library for tabular data. DataFrames are like programmable spreadsheets.",</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cheatsheet: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Creating a DataFrame", code: `&lt;span class="kw"&gt;import&lt;/span&gt; pandas &lt;span class="kw"&gt;as&lt;/span&gt; pd\n\ndf = pd.&lt;span class="fn"&gt;DataFrame&lt;/span&gt;({\n<span class="Apple-converted-space">    </span>&lt;span class="st"&gt;"name"&lt;/span&gt;: [&lt;span class="st"&gt;"Alice"&lt;/span&gt;, &lt;span class="st"&gt;"Bob"&lt;/span&gt;, &lt;span class="st"&gt;"Clara"&lt;/span&gt;],\n<span class="Apple-converted-space">    </span>&lt;span class="st"&gt;"score"&lt;/span&gt;: [&lt;span class="nm"&gt;85&lt;/span&gt;, &lt;span class="nm"&gt;92&lt;/span&gt;, &lt;span class="nm"&gt;78&lt;/span&gt;]\n})` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Selecting &amp; filtering", code: `df[&lt;span class="st"&gt;"name"&lt;/span&gt;] <span class="Apple-converted-space">            </span>&lt;span class="cm"&gt;# column&lt;/span&gt;\ndf[[&lt;span class="st"&gt;"name"&lt;/span&gt;,&lt;span class="st"&gt;"score"&lt;/span&gt;]] <span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# multi cols&lt;/span&gt;\ndf[df[&lt;span class="st"&gt;"score"&lt;/span&gt;] &amp;gt; &lt;span class="nm"&gt;80&lt;/span&gt;]<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# filter rows&lt;/span&gt;\ndf.&lt;span class="fn"&gt;iloc&lt;/span&gt;[&lt;span class="nm"&gt;0&lt;/span&gt;]<span class="Apple-converted-space">              </span>&lt;span class="cm"&gt;# first row&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Info &amp; stats", code: `df.&lt;span class="fn"&gt;head&lt;/span&gt;()<span class="Apple-converted-space">    </span>df.&lt;span class="fn"&gt;shape&lt;/span&gt;\ndf.&lt;span class="fn"&gt;describe&lt;/span&gt;()<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# summary stats&lt;/span&gt;\ndf.&lt;span class="fn"&gt;isnull&lt;/span&gt;().&lt;span class="fn"&gt;sum&lt;/span&gt;()<span class="Apple-converted-space">  </span>&lt;span class="cm"&gt;# null counts&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Groupby &amp; sort", code: `df.&lt;span class="fn"&gt;groupby&lt;/span&gt;(&lt;span class="st"&gt;"city"&lt;/span&gt;)[&lt;span class="st"&gt;"score"&lt;/span&gt;].&lt;span class="fn"&gt;mean&lt;/span&gt;()\ndf.&lt;span class="fn"&gt;sort_values&lt;/span&gt;(&lt;span class="st"&gt;"score"&lt;/span&gt;, ascending=&lt;span class="kw"&gt;False&lt;/span&gt;)\ndf[&lt;span class="st"&gt;"grade"&lt;/span&gt;] = df[&lt;span class="st"&gt;"score"&lt;/span&gt;] * &lt;span class="nm"&gt;1.1&lt;/span&gt;` },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>],</p>
+<p class="p1"><span class="Apple-converted-space">    </span>exercises: [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Create DataFrame", diff: "easy", desc: "Create a DataFrame with columns &lt;code&gt;name&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt;, &lt;code&gt;city&lt;/code&gt; for 3 people. Print it.", hint: "pd.DataFrame({'name': [...], 'age': [...], 'city': [...]})", check: o =&gt; o.includes('name') || o.includes('age') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Select a column", diff: "easy", desc: "From the DataFrame above, print only the &lt;code&gt;name&lt;/code&gt; column.", hint: "df['name']", check: o =&gt; o.trim().split('\n').length &gt;= 2 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Shape and columns", diff: "easy", desc: "Print the shape of your DataFrame and its column names.", hint: "df.shape\ndf.columns", check: o =&gt; o.includes('3') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Add a column", diff: "easy", desc: "Add a &lt;code&gt;score&lt;/code&gt; column with values &lt;code&gt;[85, 92, 78]&lt;/code&gt;. Print the updated DataFrame.", hint: "df['score'] = [85, 92, 78]", check: o =&gt; o.includes('85') &amp;&amp; o.includes('92') &amp;&amp; o.includes('78') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Filter rows", diff: "medium", desc: "Filter and print only rows where &lt;code&gt;score &gt; 80&lt;/code&gt;.", hint: "df[df['score'] &gt; 80]", check: o =&gt; o.includes('85') &amp;&amp; o.includes('92') &amp;&amp; !o.includes('78') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Sort values", diff: "medium", desc: "Sort the DataFrame by &lt;code&gt;score&lt;/code&gt; in descending order and print.", hint: "df.sort_values('score', ascending=False)", check: o =&gt; { const i92 = o.indexOf('92'); const i85 = o.indexOf('85'); return i92 &lt; i85; } },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Describe", diff: "medium", desc: "Create a DataFrame with a numeric column of at least 5 values. Print &lt;code&gt;.describe()&lt;/code&gt; output.", hint: "df.describe()", check: o =&gt; o.includes('mean') || o.includes('std') || o.includes('count') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Groupby mean", diff: "medium", desc: "Create a DataFrame with &lt;code&gt;city&lt;/code&gt; and &lt;code&gt;sales&lt;/code&gt; columns (repeated cities). Use &lt;code&gt;groupby&lt;/code&gt; to find average sales per city.", hint: "df.groupby('city')['sales'].mean()", check: o =&gt; o.trim().split('\n').length &gt;= 2 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Null handling", diff: "medium", desc: "Create a DataFrame with some &lt;code&gt;None&lt;/code&gt; values. Count nulls with &lt;code&gt;.isnull().sum()&lt;/code&gt;, then fill with 0.", hint: "df.isnull().sum()\ndf.fillna(0)", check: o =&gt; o.includes('0') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "New computed column", diff: "hard", desc: "Create a scores DataFrame. Add a &lt;code&gt;grade&lt;/code&gt; column: ≥90→'A', ≥80→'B', else→'C'. Print the result.", hint: "df['grade'] = df['score'].apply(lambda s: 'A' if s&gt;=90 else 'B' if s&gt;=80 else 'C')", check: o =&gt; o.includes('A') &amp;&amp; o.includes('B') &amp;&amp; o.includes('C') },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Merge DataFrames", diff: "hard", desc: "Create two DataFrames sharing a &lt;code&gt;name&lt;/code&gt; column. Merge them on &lt;code&gt;name&lt;/code&gt; and print.", hint: "pd.merge(df1, df2, on='name')", check: o =&gt; o.trim().split('\n').length &gt;= 3 },</p>
+<p class="p1"><span class="Apple-converted-space">      </span>{ title: "Pivot aggregation", diff: "hard", desc: "Create a DataFrame with &lt;code&gt;category&lt;/code&gt;, &lt;code&gt;month&lt;/code&gt;, &lt;code&gt;sales&lt;/code&gt;. Use &lt;code&gt;groupby(['category','month']).sum()&lt;/code&gt; and print.", hint: "df.groupby(['category','month'])['sales'].sum()", check: o =&gt; o.trim().split('\n').length &gt;= 2 },</p>
+<p class="p1"><span class="Apple-converted-space">    </span>]</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">let state = { currentTopic: 0, currentView: 'cheatsheet', currentEx: 0, solved: {}, hintShown: {} };</p>
+<p class="p1">function key(t, e) { return `${t}-${e}`; }</p>
+<p class="p1">function totalSolved() { return Object.values(state.solved).filter(Boolean).length; }</p>
+<p class="p1">function totalExercises() { return curriculum.reduce((s,t) =&gt; s + t.exercises.length, 0); }</p>
+<p class="p2"><br></p>
+<p class="p1">function updateProgress() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const s = totalSolved(), t = totalExercises();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('progress-text').textContent = `${s} / ${t} solved`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('progress-fill').style.width = `${(s/t)*100}%`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function renderTabs() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const tabs = document.getElementById('topic-tabs');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>tabs.innerHTML = curriculum.map((t,i) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const allSolved = t.exercises.every((_,j) =&gt; state.solved[key(i,j)]);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return `&lt;button class="topic-tab ${i===state.currentTopic?'active':''}" onclick="selectTopic(${i})"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-check ${allSolved?'done':''}"&gt;✓&lt;/div&gt;${t.icon} ${t.label}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/button&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}).join('');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function renderSidebar() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const topic = curriculum[state.currentTopic];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let html = `&lt;div class="section-label"&gt;Overview&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>html += `&lt;div class="ex-item ${state.currentView==='cheatsheet'?'active':''}" onclick="showCheatsheet()"&gt;📖 Cheat sheet&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>html += `&lt;div class="section-label" style="margin-top:8px"&gt;Exercises&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>topic.exercises.forEach((ex, i) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const s = state.solved[key(state.currentTopic, i)];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const active = state.currentView==='exercise' &amp;&amp; state.currentEx===i;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>html += `&lt;div class="ex-item ${active?'active':''} ${s?'solved':''}" onclick="showExercise(${i})"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="diff-dot ${ex.diff}"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="ex-num"&gt;${String(i+1).padStart(2,'0')}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span&gt;${ex.title}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${s ? '&lt;span class="check-icon"&gt;✓&lt;/span&gt;' : ''}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('sidebar').innerHTML = html;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function showCheatsheet() {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.currentView = 'cheatsheet';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const topic = curriculum[state.currentTopic];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('cheatsheet').innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cs-title"&gt;${topic.icon} ${topic.label}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cs-sub"&gt;${topic.intro}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${topic.cheatsheet.map(b =&gt; `&lt;div class="cs-block"&gt;&lt;div class="cs-block-title"&gt;${b.title}&lt;/div&gt;&lt;div class="cs-code"&gt;${b.code}&lt;/div&gt;&lt;/div&gt;`).join('')}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;button class="start-btn" onclick="showExercise(0)"&gt;Start Exercises →&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('cheatsheet').classList.add('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('exercise-panel').classList.remove('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('congrats').classList.remove('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>renderSidebar();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function showExercise(i) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.currentView = 'exercise';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.currentEx = i;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const topic = curriculum[state.currentTopic];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const ex = topic.exercises[i];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const k = key(state.currentTopic, i);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('exercise-panel').innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="ex-header"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="ex-number"&gt;${state.currentTopic+1}.${String(i+1).padStart(2,'0')}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="ex-info"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ex-title-main"&gt;${ex.title}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="diff-badge ${ex.diff}"&gt;&lt;div class="diff-dot ${ex.diff}" style="width:6px;height:6px"&gt;&lt;/div&gt;${ex.diff.charAt(0).toUpperCase()+ex.diff.slice(1)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ex-description"&gt;${ex.desc}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;textarea class="code-area" id="code-area" placeholder="# write your code here" spellcheck="false"&gt;${state.solved[k]?'# ✓ Already solved! Try again or move on.':''}&lt;/textarea&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="action-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn btn-run" onclick="runCode(${i})"&gt;▶ Run&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn btn-hint" onclick="toggleHint(${i})"&gt;💡 Hint&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="hint-box" id="hint-box" style="display:${state.hintShown[k]?'block':'none'}"&gt;${ex.hint}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="output-box" id="output-box"&gt;Output will appear here...&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="nav-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${i &gt; 0 ? `&lt;button class="btn btn-nav" onclick="showExercise(${i-1})"&gt;← Previous&lt;/button&gt;` : ''}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${i &lt; topic.exercises.length-1 ? `&lt;button class="btn btn-nav" onclick="showExercise(${i+1})"&gt;Next →&lt;/button&gt;` : ''}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('cheatsheet').classList.remove('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('exercise-panel').classList.add('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('congrats').classList.remove('visible');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>renderSidebar();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function toggleHint(i) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const k = key(state.currentTopic, i);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const box = document.getElementById('hint-box');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (!box) return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const show = box.style.display === 'none' || box.style.display === '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>box.style.display = show ? 'block' : 'none';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.hintShown[k] = show;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function pythonToJS(code) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let lines = code.split('\n'), js = '', indentStack = [0], declared = new Set();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>for (let i = 0; i &lt; lines.length; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let line = lines[i], stripped = line.trimStart();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!stripped || stripped.startsWith('#')) continue;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let indent = line.length - stripped.length;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>while (indent &lt; indentStack[indentStack.length-1]) { indentStack.pop(); js += '}\n'; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let out = stripped;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^import numpy as np$/, 'const np = null;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^import pandas as pd$/, 'const pd = null;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^import .*$/, '');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^for (\w+) in range\((\S+)\)\s*:/, (_, v, n) =&gt; `for(let ${v}=0;${v}&lt;${n};${v}++){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^for (\w+) in range\((\S+),\s*(\S+)\)\s*:/, (_, v, a, b) =&gt; `for(let ${v}=${a};${v}&lt;${b};${v}++){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^for (\w+) in range\((\S+),\s*(\S+),\s*(-?\d+)\)\s*:/, (_, v, a, b, s) =&gt; parseInt(s)&gt;0?`for(let ${v}=${a};${v}&lt;${b};${v}+=${s}){`:`for(let ${v}=${a};${v}&gt;${b};${v}+=(${s})){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^for (\w+) in (\w+)\s*:/, (_, v, arr) =&gt; `for(const ${v} of ${arr}){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^for (\w+) in \[([^\]]+)\]\s*:/, (_, v, arr) =&gt; `for(const ${v} of [${arr}]){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^while (.+)\s*:/, (_, c) =&gt; `while(${c.replace(/\band\b/g,'&amp;&amp;').replace(/\bor\b/g,'||')}){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^if (.+)\s*:/, (_, c) =&gt; `if(${c.replace(/\band\b/g,'&amp;&amp;').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!')}){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^elif (.+)\s*:/, (_, c) =&gt; `}else if(${c.replace(/\band\b/g,'&amp;&amp;').replace(/\bor\b/g,'||')}){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^else\s*:/, '}else{');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^def (\w+)\(([^)]*)\)\s*:/, (_, n, a) =&gt; `function ${n}(${a}){`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^return (.+)/, 'return $1;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^return$/, 'return;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^break$/, 'break;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^continue$/, 'continue;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^raise (\w+)\((.+)\)/, (_, e, m) =&gt; `throw new Error(${m});`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^try\s*:/, 'try{');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^except.*:/, '}catch(_e){');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/^finally\s*:/, '}finally{');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/print\(f"([^"]+)"\)/g, (_, t) =&gt; `print(\`${t.replace(/\{([^}]+)\}/g,'${$1}')}\`);`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/print\(f'([^']+)'\)/g, (_, t) =&gt; `print(\`${t.replace(/\{([^}]+)\}/g,'${$1}')}\`);`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/print\((.+)\)/g, (_, a) =&gt; `print(${a});`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/(\w+) \+= (.+)/, '$1 += $2;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/(\w+) -= (.+)/, '$1 -= $2;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/(\w+) \*= (.+)/, '$1 *= $2;');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\blen\((\w+)\)/g,'$1.length');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bstr\(([^)]+)\)/g,'String($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bint\(([^)]+)\)/g,'parseInt($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bfloat\(([^)]+)\)/g,'parseFloat($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\babs\(([^)]+)\)/g,'Math.abs($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bmin\(([^)]+)\)/g,'_min($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bmax\(([^)]+)\)/g,'_max($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bsum\(([^)]+)\)/g,'_sum($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\bsorted\(([^)]+)\)/g,'_sorted($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\brange\(([^)]+)\)/g,'_range($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.append\(/g,'.push(');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.strip\(\)/g,'.trim()');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.lower\(\)/g,'.toLowerCase()');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.upper\(\)/g,'.toUpperCase()');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.split\(\)/g,".split(' ')");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.split\(([^)]+)\)/g,'.split($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.replace\(([^,]+),\s*([^)]+)\)/g,'.replace(new RegExp($1,"g"),$2)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.count\(([^)]+)\)/g,(_, c) =&gt; `.split(${c}).length-1`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.startswith\(/g,'.startsWith(');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.endswith\(/g,'.endsWith(');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.title\(\)/g,".replace(/\\b\\w/g,c=&gt;c.toUpperCase())");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.find\(([^)]+)\)/g,'.indexOf($1)');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>out = out.replace(/\.get\(([^,]+),\s*([^)]+)\)/g,'?.[String($1)] ?? $2');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const am = out.match(/^(\w+) = (.+)/);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (am &amp;&amp; !out.startsWith('let ') &amp;&amp; !out.startsWith('const ') &amp;&amp; !out.startsWith('for') &amp;&amp; !out.startsWith('while') &amp;&amp; !out.startsWith('if') &amp;&amp; !out.startsWith('function') &amp;&amp; !out.startsWith('}') &amp;&amp; !out.startsWith('return') &amp;&amp; !out.startsWith('throw')) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!declared.has(am[1])) { out = 'let ' + out; declared.add(am[1]); }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (out.endsWith('{')) indentStack.push(indent + 1);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>js += out + '\n';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>while (indentStack.length &gt; 1) { js += '}\n'; indentStack.pop(); }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return js;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function runCode(i) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const ex = curriculum[state.currentTopic].exercises[i];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const code = document.getElementById('code-area').value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const outBox = document.getElementById('output-box');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if (!code || code.startsWith('#')) { outBox.className='output-box'; outBox.textContent='Write some code and click Run!'; return; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let output = [];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const fakePrint = (...args) =&gt; output.push(args.map(a =&gt; a===null?'None':a===true?'True':a===false?'False':Array.isArray(a)?'['+a.join(', ')+']':String(a)).join(' '));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const helpers = `</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function _min(){const a=arguments.length===1&amp;&amp;Array.isArray(arguments[0])?arguments[0]:[...arguments];return Math.min(...a);}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function _max(){const a=arguments.length===1&amp;&amp;Array.isArray(arguments[0])?arguments[0]:[...arguments];return Math.max(...a);}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function _sum(a){return a.reduce((s,x)=&gt;s+x,0);}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function _sorted(a){const c=[...a];c.sort((x,y)=&gt;x&gt;y?1:-1);return c;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function _range(a,b,s){const r=[];if(b===undefined){for(let i=0;i&lt;a;i++)r.push(i);}else{const st=s||1;if(st&gt;0){for(let i=a;i&lt;b;i+=st)r.push(i);}else{for(let i=a;i&gt;b;i+=st)r.push(i);}}return r;}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function zip(a,b){return a.map((x,i)=&gt;[x,b[i]]);}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const jsCode = pythonToJS(code);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const fn = new Function('print', helpers + jsCode);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>fn(fakePrint);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const result = output.join('\n');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const ok = ex.check(result);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outBox.textContent = (result || '(no output printed)') + (ok ? '\n\n✓ Correct!' : '');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outBox.className = 'output-box ' + (ok ? 'success' : '');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (ok) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>state.solved[key(state.currentTopic, i)] = true;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>renderSidebar(); renderTabs(); updateProgress();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const topic = curriculum[state.currentTopic];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (topic.exercises.every((_,j) =&gt; state.solved[key(state.currentTopic,j)])) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>document.getElementById('exercise-panel').classList.remove('visible');</p>
+<p class="p1"><span class="Apple-converted-space">          </span>document.getElementById('congrats').classList.add('visible');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}, 1200);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>} catch(e) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outBox.textContent = 'Error: ' + e.message + '\n\nTip: Check your indentation and syntax.';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outBox.className = 'output-box error';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function selectTopic(i) {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.currentTopic = i;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>state.currentView = 'cheatsheet';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>showCheatsheet(); renderTabs();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">renderTabs(); showCheatsheet(); updateProgress();</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
 </body>
 </html>
